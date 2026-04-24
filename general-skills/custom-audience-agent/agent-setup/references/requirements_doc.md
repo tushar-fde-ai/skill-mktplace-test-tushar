@@ -1,0 +1,184 @@
+# Phase 1: Requirements Gathering
+
+Collect all information needed to configure the Custom Audience Agent before touching any configuration files.
+
+## Step 1: Locate the Customer's Confluence Folder
+
+The customer documentation lives in the **Customers** Confluence space (CUST), organized by region:
+
+```
+Customers (CUST, space ID: 9797636)
+├── US/ROWs    (page ID: 44728439)    → customer folders alphabetically
+├── Japan      (page ID: 643963288)   → customer folders
+└── Korea      (page ID: 1824266587)  → customer folders
+```
+
+Ask the user to identify the customer's Confluence folder using **one of two methods**:
+
+### Method A: Search by Customer Name (Preferred)
+
+Ask: **What is the customer name?**
+
+Then search for their folder in the CUST space:
+
+```
+searchConfluenceUsingCql:
+  cloudId: treasure-data.atlassian.net
+  cql: space = "CUST" AND type = page AND title ~ "<customer_name>"
+  limit: 10
+```
+
+From the results, identify the correct page by checking:
+1. The page title matches or closely matches the customer name
+2. The page's `parentId` is one of the three region pages (`44728439`, `643963288`, `1824266587`) — confirming it's a top-level customer folder, not a deeply nested subpage
+
+If multiple matches are found, show them to the user and ask which one is correct.
+If no matches are found, ask the user to provide a direct link (Method B).
+
+### Method B: User Provides a Page URL or ID
+
+Ask: **Can you paste a link to any page in the customer's Confluence folder?**
+
+Extract the page ID from the URL. Confluence URLs look like:
+- `https://treasure-data.atlassian.net/wiki/spaces/CUST/pages/<pageId>/Page+Title`
+- `https://treasure-data.atlassian.net/wiki/x/<tinyId>` (tiny link — pass the `tinyId` to `getConfluencePage` as the `pageId`)
+
+Once you have the page ID, read the page to get its `parentId`. If the page itself is the customer folder (i.e., its parent is a region page), use its ID. Otherwise, walk up the tree until you find the customer-level folder.
+
+### Step 1b: Locate or Create the FDE Solutions Sub-Folder
+
+Documentation pages should live under an **FDE Solutions** sub-folder within the customer folder — not directly under the customer root.
+
+**Search for an existing sub-folder**:
+
+Get the direct children of the customer folder and look for a match:
+
+```
+getConfluencePageDescendants:
+  cloudId: treasure-data.atlassian.net
+  pageId: <customer_folder_page_id>
+  depth: 1
+  limit: 50
+```
+
+Scan the results for a page whose title matches any of these patterns (case-insensitive):
+- `FDE Solutions`
+- `ML & Analytics Solutions`
+- `ML & Analytics Projects`
+- `ML Solutions`
+- `ML Projects`
+- `Analytics Solutions`
+- `Analytics Projects`
+- `FDE`
+
+Also match titles that include the customer name as a suffix (e.g., `ML & Analytics Projects - SCI`).
+
+If a match is found, use that page's ID.
+
+**If no match is found**, create the sub-folder:
+
+```
+createConfluencePage:
+  cloudId: treasure-data.atlassian.net
+  spaceId: 9797636
+  parentId: <customer_folder_page_id>
+  title: "FDE Solutions"
+  contentFormat: markdown
+  body: "Landing page for Forward Deployed Engineering solutions deployed for this customer."
+```
+
+### Step 1c: Locate or Create the Custom Audience Agent Sub-Folder
+
+Within the ML/FDE sub-folder, create (or find) a folder specific to the Custom Audience Agent project.
+
+**Search for an existing Custom Audience Agent folder**:
+
+Get the direct children of the ML/FDE sub-folder:
+
+```
+getConfluencePageDescendants:
+  cloudId: treasure-data.atlassian.net
+  pageId: <ml_fde_folder_page_id>
+  depth: 1
+  limit: 50
+```
+
+Scan the results for a page whose title matches any of these patterns (case-insensitive):
+- `Audience Agent`
+- `Custom Agent`
+
+If a match is found, use that page's ID.
+
+**If no match is found**, create the sub-folder:
+
+```
+createConfluencePage:
+  cloudId: treasure-data.atlassian.net
+  spaceId: 9797636
+  parentId: <ml_fde_folder_page_id>
+  title: "Custom Audience Agent"
+  contentFormat: markdown
+  body: "Custom Audience Agent documentation for this customer."
+```
+
+### Store the Folder IDs
+
+Save both:
+- **ML/FDE sub-folder page ID**
+- **Custom Audience Agent sub-folder page ID** — you'll use this as the `parentId` when creating documentation pages in Phase 5
+
+The final page hierarchy will be:
+```
+[Customer Folder]
+└── FDE Solutions 
+    └── Custom Audience Agent          ← parentId for Phase 5
+        ├── Audience Agent Requirements Gathering
+        ├── Audience Agent Eval Prompts
+```
+
+## Step 2: Check for Existing Requirements Doc
+
+Ask the user:
+
+> Do you have an existing filled-out requirements gathering doc? If yes, paste the Confluence link.
+
+If provided, read the page content using `getConfluencePage` and extract whatever configuration details are available (database, tables, columns, conversion definition, etc.). Use the extracted values to pre-fill later steps, but still validate everything through auto-discovery.
+
+## Step 3: Initial Questions
+
+Collect answers to these questions before exploring any data. These determine the scope and complexity of the Custom Audience Agent configuration.
+
+### 3a: Data Readiness
+
+
+
+## Step 5: Validate & Confirm
+
+Before proceeding to documentation generation, present the full requirements summary to the user:
+
+```
+Custom Audience Agent — Requirements Summary
+=============================================
+
+Customer: [name]
+Database: [database_name]
+User ID column: [unique_user_id]
+Confluence folder: [page URL]
+
+Tables To Analyze:
+1. [table_name] — [description] — conversion: [yes/no]
+2. [table_name] — [description] — conversion: [yes/no]
+...
+
+Conversion Definition: [what triggers conversion_flag: 1.0]
+Revenue Metric: [column name or count-based (1.0)]
+
+Time Filter: [none / range: start-end / interval: lookback]
+Business Rules: [order status filter, language filter, etc.]
+
+Business Context: Any specific column name context derived from the data that we should verify with the customer before we proceed
+
+Please confirm this is correct before I proceed with configuration.
+```
+
+Once confirmed, proceed to the YAML generation workflow in `workflow-setup/SKILL.md` Step 4.
