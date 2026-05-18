@@ -1,0 +1,11 @@
+# Customer-specific configs and rendered dashboards — local artifacts, not part of the skill template
+**/.customer-configs/
+
+# OS metadata
+.DS_Store
+**/.DS_Store
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
