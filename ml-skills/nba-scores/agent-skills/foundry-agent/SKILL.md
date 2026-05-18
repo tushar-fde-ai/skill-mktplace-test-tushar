@@ -1,5 +1,5 @@
 ---
-name: nba-foundry-skill
+name: nba-scores-foundry-skill
 description: |
   Deploy the NBA Insights AI Foundry agent to a TD instance. Covers cloning the agent template from GitHub, configuring the project name, reviewing the agent structure, updating knowledge-base table references for the customer's sink database, and pushing via tdx agent commands. Trigger when users want to set up the NBA companion agent or deploy the NBA Foundry agent.
 ---
