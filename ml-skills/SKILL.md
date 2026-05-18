@@ -1,7 +1,7 @@
 ---
-name: aps-ml-wf-skills
+name: fde-ml-skills
 description: |
-  Routes to the correct APS ML workflow skill. Trigger on: RFM, CLV, churn, MTA, attribution, NBA, NBP, customer segmentation, predictive model, ML workflow.
+  Routes to the correct FDE ML workflow skill. Trigger on: RFM, CLV, churn, MTA, attribution, NBA, NBP, customer segmentation, predictive model, ML workflow.
 compatibility:
   required_tools:
     - Bash
@@ -42,6 +42,6 @@ All ML workflows follow the same steps:
 
 Each workflow folder contains:
 - `SKILL.md` — overview and routing within that workflow
-- `workflow-setup/` — SKILL.md + references/ for configuring the TD workflow
+- `workflow-setup/` — SKILL.md + references/ for configuring the TD workflow and requirements gathering documentation
 - `agent-setup/` or `agent-skills/` — references for the companion LLM agent
 - `prod-docs/` — production documentation and references

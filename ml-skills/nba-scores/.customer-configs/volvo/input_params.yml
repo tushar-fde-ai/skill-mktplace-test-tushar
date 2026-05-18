@@ -1,0 +1,235 @@
+#####################################################################
+########################## GLOBAL PARAMS ############################
+#####################################################################
+# Customer:        Volvo
+# Database:        automotive_demo
+# Generated:       2026-05-18 from Volvo - NBA Requirements Gathering
+# Confluence ref:  https://treasure-data.atlassian.net/wiki/x/cgDXJwE
+#####################################################################
+sink_database: automotive_demo                    # All NBA output tables land here
+unique_user_id: customer_id                       # No ID Unification — using customer_id directly across all source tables
+api_endpoint: 'api.treasuredata.com'              # US01 region
+model_config_table: 'datamodel_build_history'     # Standard datamodel-tracking table (unused since create_dashboard='no')
+create_dashboard: 'no'                            # Demo run — skip TI datamodel build (nba_dash_* tables still populate)
+cleanup_temp_tables: 'yes'                        # Drop temp tables after final output is written
+prefix: 'nba'
+
+#####################################################################
+######################## FILTER PARAMS ##############################
+#####################################################################
+time_filter_type: range                           # Use full data history (Apr 2025 – Apr 2026)
+time_range_start_date: 2025-04-01                 # Start of available data
+time_range_end_date: 2222-22-22                   # Default — always end at the latest available date
+lookback_period: -180d                            # Unused with time_filter_type: range
+session_length: 3600                              # 1 hr inactivity → new session
+backfill_partition_col: ${unique_user_id}         # Backfill NULL channels across the whole profile journey
+top_k_channel_perc: 0.001                         # Keep long-tail channels (small dataset)
+top_k_conv_perc: 0.001
+time_zone: 'UTC'                                  # Demo deployment — no marketing-ops timezone alignment
+timeshift_change: '+'
+timeshift_hours: 0                                # No shift
+scoring_logic: 'quartile'                         # 4 evenly-sized buckets per channel/daypart — easy for marketers to consume
+topk_values: 10
+
+################### OUTPUT TABLES ###################################
+src_union_table: nba_combined_user_events
+final_nba_metrics_table: nba_combined_metrics_final
+
+#####################################################################
+############# TABLE INPUT PARAMS FOR UNION TABLE ####################
+#####################################################################
+# Source mapping inherits from the Volvo MTA setup (same automotive_demo data).
+# Five touchpoint sources + one conversion source (test_drives).
+aggregate_metrics_tables:
+
+  ###################### TOUCHPOINT 1: WEB EVENTS ###################
+  # 9,720 rows, 870 unique profiles, 57% UTM coverage.
+  # Includes the 491 'Abandon' events that drive the cart-abandon flag.
+  - src_table: automotive_demo.web_events
+    name: 'web_events'
+    unixtime_col: time
+    join_key: ${unique_user_id}
+    market_col: "''none''"
+    brand_col: "''none''"
+    url_col: page_url
+    referral_col: referrer
+    medium_col: "url_extract_parameter(LOWER(page_url),''utm_medium'')"
+    source_col: "url_extract_parameter(LOWER(page_url),''utm_source'')"
+    campaign_col: "url_extract_parameter(LOWER(page_url),''utm_campaign'')"
+    context_col: device_type
+    event_type: "CONCAT(''web_'', lower(event_type))"
+    custom_filter: "${unique_user_id} IS NOT NULL"
+    conversion_flag: 0.0                          # Web is touchpoint only — conversions counted from test_drives
+    item_price: 0.0
+    apply_time_filter: false
+    query_type:
+
+  ###################### TOUCHPOINT 2: EMAIL EVENTS #################
+  # 8,140 raw rows → 4,507 valid touchpoints after excluding Sent/Bounced.
+  - src_table: automotive_demo.email_events
+    name: 'email_events'
+    unixtime_col: time
+    join_key: ${unique_user_id}
+    market_col: "''none''"
+    brand_col: "''none''"
+    url_col: CAST(NULL AS VARCHAR)
+    referral_col: "''email''"
+    medium_col: "''email''"
+    source_col: "''email_campaign''"
+    campaign_col: "REGEXP_REPLACE(lower(campaign_name), ''[- ]'', ''_'')"
+    context_col: "REGEXP_REPLACE(lower(campaign_name), ''[- ]'', ''_'')"
+    event_type: "CONCAT(''email_'', lower(event_type))"
+    custom_filter: "${unique_user_id} IS NOT NULL AND event_type NOT IN (''Sent'', ''Bounced'')"
+    conversion_flag: 0.0
+    item_price: 0.0
+    apply_time_filter: false
+    query_type:
+
+  ###################### TOUCHPOINT 3: SERVICE HISTORY ##############
+  # 4,000 rows — vehicle service touchpoints by dealer + service type.
+  - src_table: automotive_demo.service_history
+    name: 'service_history'
+    unixtime_col: time
+    join_key: ${unique_user_id}
+    market_col: "''none''"
+    brand_col: "''none''"
+    url_col: CAST(NULL AS VARCHAR)
+    referral_col: CAST(NULL AS VARCHAR)
+    medium_col: "''service''"
+    source_col: "lower(dealer_name)"
+    campaign_col: "lower(service_type)"
+    context_col: "lower(service_type)"
+    event_type: "CONCAT(''service_'', REGEXP_REPLACE(lower(service_type), ''[- ]'', ''_''))"
+    custom_filter: ${unique_user_id} IS NOT NULL
+    conversion_flag: 0.0
+    item_price: 0.0
+    apply_time_filter: false
+    query_type:
+
+  ###################### TOUCHPOINT 4: SUPPORT TICKETS ##############
+  # 2,060 rows — customer support touchpoints by category.
+  - src_table: automotive_demo.support_tickets
+    name: 'support_tickets'
+    unixtime_col: time
+    join_key: ${unique_user_id}
+    market_col: "''none''"
+    brand_col: "''none''"
+    url_col: CAST(NULL AS VARCHAR)
+    referral_col: CAST(NULL AS VARCHAR)
+    medium_col: "''support''"
+    source_col: "''support_ticket''"
+    campaign_col: "lower(category)"
+    context_col: "lower(category)"
+    event_type: "CONCAT(''support_'', REGEXP_REPLACE(lower(category), ''[- ]'', ''_''))"
+    custom_filter: ${unique_user_id} IS NOT NULL
+    conversion_flag: 0.0
+    item_price: 0.0
+    apply_time_filter: false
+    query_type:
+
+  ###################### TOUCHPOINT 5: RECALL NOTICES ###############
+  # 494 rows — recall touchpoints by severity.
+  - src_table: automotive_demo.recall_notices
+    name: 'recall_notices'
+    unixtime_col: time
+    join_key: ${unique_user_id}
+    market_col: "''none''"
+    brand_col: "''none''"
+    url_col: CAST(NULL AS VARCHAR)
+    referral_col: CAST(NULL AS VARCHAR)
+    medium_col: "''recall''"
+    source_col: "''recall_notice''"
+    campaign_col: "lower(severity)"
+    context_col: "lower(severity)"
+    event_type: "CONCAT(''recall_'', lower(severity))"
+    custom_filter: ${unique_user_id} IS NOT NULL
+    conversion_flag: 0.0
+    item_price: 0.0
+    apply_time_filter: false
+    query_type:
+
+  ###################### CONVERSION SOURCE: TEST DRIVES #############
+  # 934 raw rows → 688 valid conversions (Completed + Rescheduled + Purchased).
+  # No literal cart — funnel goal is the test drive.
+  - src_table: automotive_demo.test_drives
+    name: 'test_drives'
+    unixtime_col: time
+    join_key: ${unique_user_id}
+    market_col: "''none''"
+    brand_col: "''none''"
+    url_col: CAST(NULL AS VARCHAR)
+    referral_col: CAST(NULL AS VARCHAR)
+    medium_col: CAST(NULL AS VARCHAR)
+    source_col: CAST(NULL AS VARCHAR)
+    campaign_col: CAST(NULL AS VARCHAR)
+    context_col: "CONCAT(lower(make), ''_'', lower(model))"
+    event_type: "CONCAT(''test_drive_'', lower(outcome))"
+    custom_filter: ${unique_user_id} IS NOT NULL AND outcome NOT IN (''Cancelled'', ''No-Show'')
+    conversion_flag: 1.0
+    item_price: 1.0                               # Count-based — no monetary value on test drives
+    apply_time_filter: false
+    query_type:
+
+#################### NEXT BEST TIME PARAMS ##########################
+# Default 4-bucket daypart breakdown (UTC).
+next_best_time:
+  outputs:
+    database: ${sink_database}
+    union_table: nba_combined_user_events_final
+    activity_period_column: activity_period
+    day_breakdown:
+      - period: morning
+        logic: time_hour >= 6 AND time_hour <= 11
+      - period: afternoon
+        logic: time_hour >= 12 AND time_hour <= 17
+      - period: evening
+        logic: time_hour >= 18 AND time_hour <= 23
+      - period: overnight
+        logic: time_hour >= 0 AND time_hour <= 5
+
+####################### NEXT BEST CHANNEL PARAMS ####################
+utm_parcing:
+  date_field: time
+  channel_column: channel
+  source_column: source
+  exclude_channel_regexp: '%|!|@|#|\(|\)'
+  min_percent: 0.4
+
+  outputs:
+    union_table: nba_combined_user_events_final
+
+###################### NEXT BEST CAMPAIGN PARAMS ####################
+# Volvo overrides:
+#   - abandon_regexp matches the 'Abandon' web_event (event_type becomes 'web_abandon' after concat)
+#   - new_customers_days widened to 180d (data starts Apr 2025 — default 45d would flag 0% of profiles)
+next_best_campaign:
+  database: ${sink_database}
+  src_table: nba_combined_user_events_final
+  join_key: ${unique_user_id}
+  date_field: time
+  abandon_regexp: REGEXP_LIKE(lower(event_type), 'abandon')
+  abandon_regexp_string: REGEXP_LIKE(lower(event_type), ''abandon'')
+  conversion_logic: conversion_flag > 0
+  ad_engagement_logic: channel IN ('paid search', 'tiktok', 'web ads', 'dsp_rtb', 'maddict', 'call center', 'others', 'display')
+  ad_engagement_logic_string: channel IN (''paid'', ''search'', ''tiktok'', ''web ads'', ''dsp_rtb'', ''maddict'', ''call center'', ''others'', ''display'')
+  event_lookback: 90                              # 90d cart-abandon lookback
+  new_customers_days: 180                         # OVERRIDE from default 45 — Volvo data history is 1 year, ~15 profiles qualify at 180d
+  max_number_visits: 15
+  custom_flags_table: nba_custom_campaign_flags
+
+####################### TEMPORARY TABLES ############################
+temporary_tables:
+  next_best_channel: nba_next_best_channel
+  next_best_time: nba_next_best_time
+  next_best_campaign: nba_next_best_campaign
+  cart_abandon: nba_cart_abandon
+  new_visitors: nba_new_visitor_no_ads
+  regexp_columns: 'visitor|aban|perc|minmax'
+
+  table_list:
+    - nba_next_best_time
+    - nba_next_best_channel
+    - nba_next_best_campaign
+    - nba_cart_abandon
+    - nba_new_visitor_no_ads
+    - schema

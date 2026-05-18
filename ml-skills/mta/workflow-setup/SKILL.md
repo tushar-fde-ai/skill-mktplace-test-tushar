@@ -1,5 +1,5 @@
 ---
-name: mta-journey-workflow-setup
+name: mta-workflow-setup
 description: |
   MTA (Multi-Touch Attribution) Journey Analytics workflow configuration for Treasure Data. Use this skill to configure MTA journey analysis workflows. Trigger when users mention MTA, multi-touch attribution, channel attribution, Markov, Shapley, conversion paths, journey analytics, or marketing attribution.
 ---
