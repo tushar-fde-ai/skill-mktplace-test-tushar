@@ -1,5 +1,5 @@
 ---
-name: nbp-workflow-setup
+name: fde-nbp-workflow-setup
 description: |
   NBP (Next Best Product) workflow configuration for Treasure Data. Use this skill to configure NBP product recommendation workflows using hive (Hivemall) or automl (PrecisionML/ml-batch-api). Trigger when users mention NBP, Next Best Product, product recommendations, ALS, similar_to_latest, popular, Hivemall, DIMSUM, or collaborative filtering.
 ---

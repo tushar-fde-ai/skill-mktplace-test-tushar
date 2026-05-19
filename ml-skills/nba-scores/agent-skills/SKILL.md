@@ -1,5 +1,5 @@
 ---
-name: nba-scores-agent-skills
+name: fde-nba-scores-agent-skills
 description: |
   Routes between two NBA agent paths: deploying the NBA Insights Foundry agent template to a customer's TD instance, or using the local NBA Insights skill directly inside Treasure Work to query the NBA dashboard tables.
 ---

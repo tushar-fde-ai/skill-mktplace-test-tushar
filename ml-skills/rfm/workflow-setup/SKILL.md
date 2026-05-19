@@ -1,5 +1,5 @@
 ---
-name: rfm
+name: fde-rfm-workflow-setup
 description: |
   RFM (Recency, Frequency, Monetary) analysis workflow for Treasure Data. Use this skill to configure RFM customer segmentation workflows. Trigger when users mention RFM, customer segmentation, recency/frequency/monetary analysis, or identifying high-value customers.
 ---

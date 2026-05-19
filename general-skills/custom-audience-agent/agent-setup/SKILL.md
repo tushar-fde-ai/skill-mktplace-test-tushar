@@ -1,5 +1,5 @@
 ---
-name: custom-audience-agent-setup
+name: fde-custom-audience-agent-setup
 description: |
   Setup and deploy a custom audience agent to TD AI Foundry. Covers requirements gathering, agent template configuration, and deployment.
 ---

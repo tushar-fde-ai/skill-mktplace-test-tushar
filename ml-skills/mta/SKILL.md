@@ -1,5 +1,5 @@
 ---
-name: mta-master
+name: fde-mta
 description: |
   MTA (Multi-Touch Attribution) Journey Analytics for Treasure Data. Configures workflows that build unified customer journeys and run attribution models (Markov, Shapley). Trigger on: MTA, multi-touch attribution, channel attribution, conversion paths, journey analytics, Markov, Shapley, marketing attribution, channel mix, CPA, CPB.
 ---

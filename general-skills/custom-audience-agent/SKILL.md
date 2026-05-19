@@ -1,5 +1,5 @@
 ---
-name: custom-audience-agent
+name: fde-custom-audience-agent
 description: |
   Build and deploy a custom AI Foundry audience agent for CDP parent segment analysis. Covers data exploration, requirements gathering, agent template setup from GitHub, and eval framework creation. 
 ---

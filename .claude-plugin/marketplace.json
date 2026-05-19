@@ -17,9 +17,25 @@
       "skills": [
         "./ml-skills",
         "./ml-skills/rfm",
-        "./ml-skills/mta-journey-analytics",
-        "./ml-skills/nba",
-        "./ml-skills/nbp"
+        "./ml-skills/rfm/workflow-setup",
+        "./ml-skills/rfm/agent-skills",
+        "./ml-skills/rfm/agent-skills/foundry-agent",
+        "./ml-skills/mta",
+        "./ml-skills/mta/workflow-setup",
+        "./ml-skills/mta/prod-docs",
+        "./ml-skills/mta/agent-skills",
+        "./ml-skills/mta/agent-skills/foundry-agent",
+        "./ml-skills/mta/agent-skills/mta-journey-analysis",
+        "./ml-skills/nba-scores",
+        "./ml-skills/nba-scores/workflow-setup",
+        "./ml-skills/nba-scores/prod-docs",
+        "./ml-skills/nba-scores/agent-skills",
+        "./ml-skills/nba-scores/agent-skills/foundry-agent",
+        "./ml-skills/nba-scores/agent-skills/nba-insights",
+        "./ml-skills/nbp",
+        "./ml-skills/nbp/workflow-setup",
+        "./ml-skills/nbp/prod-docs",
+        "./ml-skills/nbp/agent-skills"
       ]
     },
     {
@@ -29,7 +45,9 @@
       "strict": false,
       "skills": [
         "./general-skills",
-        "./general-skills/custom-audience-agent"
+        "./general-skills/custom-audience-agent",
+        "./general-skills/custom-audience-agent/agent-setup",
+        "./general-skills/custom-audience-agent/prod-docs"
       ]
     }
   ]

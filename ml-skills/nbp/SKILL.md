@@ -1,5 +1,5 @@
 ---
-name: nbp
+name: fde-nbp
 description: |
   Next Best Product (NBP) recommendation workflow for Treasure Data. Configures workflows that generate personalized product recommendations using collaborative filtering (Hivemall) or PrecisionML (ml-batch-api). Trigger on: NBP, Next Best Product, product recommendations, recommend products, ALS recommendations, similar_to_latest, popular recommendations, item recommendations, collaborative filtering, Hivemall, DIMSUM similarity, PrecisionML, automl recommendations.
 ---

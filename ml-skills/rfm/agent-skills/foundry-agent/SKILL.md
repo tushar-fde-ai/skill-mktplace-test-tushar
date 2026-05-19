@@ -1,5 +1,5 @@
 ---
-name: mta-foundry-skill
+name: fde-rfm-foundry-skill
 description: |
   Deploy the MTA Journey Analytics AI Foundry agent to a TD instance. Covers cloning the agent template from GitHub, configuring the project name, reviewing the agent structure, and pushing via tdx agent commands. Trigger when users want to set up the MTA companion agent, deploy the MTA Foundry agent, or build an AI agent for MTA analysis.
 ---

@@ -1,5 +1,5 @@
 ---
-name: mta-agent-skills
+name: fde-mta-agent-skills
 description: |
   Route to correct folder depending on whether Foundry Agent  needs to be built from scratch or you just want to directly use mta-journey-analysis skill directly 
 ---

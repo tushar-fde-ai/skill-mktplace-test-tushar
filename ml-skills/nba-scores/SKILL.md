@@ -1,5 +1,5 @@
 ---
-name: nba-scores-master
+name: fde-nba-scores
 description: |
   NBA (Next Best Action) Engagement Scores for Treasure Data. Configures workflows that union customer activity, derive per-profile Next Best Channel / Next Best Time / Next Best Campaign affinity scores plus cart-abandon and new-visitor flags, and write the combined output into Audience Studio. Trigger on: NBA, Next Best Action, engagement scores, channel affinity, time of day affinity, cart abandon, new visitor, NBA dashboard.
 ---

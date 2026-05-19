@@ -1,5 +1,5 @@
 ---
-name: nba-scores-prod-docs
+name: fde-nba-scores-prod-docs
 description: |
   Production documentation for the MTA Journey Analytics workflow. Covers workflow architecture, output tables, attribution models, and operational runbook.
 ---

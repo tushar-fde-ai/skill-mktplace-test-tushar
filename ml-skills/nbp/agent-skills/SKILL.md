@@ -1,5 +1,5 @@
 ---
-name: nbp-agent-skills
+name: fde-nbp-agent-skills
 description: |
   Route to correct folder depending on whether a Foundry Agent needs to be built from scratch or you want to directly use the NBP analysis skill directly.
 ---

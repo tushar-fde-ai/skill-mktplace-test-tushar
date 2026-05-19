@@ -1,5 +1,5 @@
 ---
-name: mta-journey-agent
+name: fde-mta-journey-agent
 description: |
   Multi-touch attribution and customer journey analysis agent using Markov, Shapley, and rule-based attribution models to understand what customer touchpoints and marketing channel have the highest impact on customer engagement and conversion events.
 ---

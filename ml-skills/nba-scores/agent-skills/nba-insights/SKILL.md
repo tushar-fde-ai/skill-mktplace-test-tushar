@@ -1,5 +1,5 @@
 ---
-name: nba-scores-insights-agent
+name: fde-nba-scores-insights-agent
 description: |
   NBA (Next Best Action) Engagement Scores insights agent. Reads the three NBA dashboard tables (nba_dash_stats_summary, nba_dash_model_metrics, nba_dash_source_tables) to answer questions about the latest run, score distributions, run-to-run comparisons, source-data volumes, and how each NBA score (Next Best Channel, Next Best Time, Next Best Campaign, cart-abandon, new-visitor) is determined. 
 ---

@@ -1,5 +1,5 @@
 ---
-name: nba-scores-workflow-setup
+name: fde-nba-scores-workflow-setup
 description: |
   NBA (Next Best Action) Engagement Scores workflow configuration for Treasure Data. Use this skill to configure NBA engagement-scoring workflows that produce per-profile Next Best Channel, Next Best Time, Next Best Campaign affinity scores plus cart-abandon and new-visitor flags. Trigger when users mention NBA, Next Best Action, engagement scores, channel affinity, time of day affinity, cart abandon, new visitor, or activating engagement scores into Audience Studio.
 ---

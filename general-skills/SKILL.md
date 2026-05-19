@@ -1,5 +1,5 @@
 ---
-name: aps-general-skills
+name: fde-general-skills
 description: |
   Routes to the correct FDE general solution skill. These are non-ML solutions — custom AI agents for audience analysis, ad-hoc analytics, and segment reporting. Trigger on: audience agent, custom agent, analytics agent, segment analytics, CDP reporting, build agent, ad-hoc analysis.
 compatibility:
