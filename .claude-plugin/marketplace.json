@@ -5,7 +5,7 @@
     "email": "ps-ml-analytics@treasure.ai"
   },
   "metadata": {
-    "version": "1.1.0",
+    "version": "1.2.0",
     "description": "FDE team skills for deploying ML solutions and custom AI agents on Treasure AI"
   },
   "plugins": [
@@ -20,9 +20,6 @@
         "./ml-skills/rfm/agent-skills",
         "./ml-skills/rfm/agent-skills/foundry-agent",
         "./ml-skills/mta",
-        "./ml-skills/mta/workflow-setup",
-        "./ml-skills/mta/prod-docs",
-        "./ml-skills/mta/agent-skills",
         "./ml-skills/mta/agent-skills/foundry-agent",
         "./ml-skills/mta/agent-skills/mta-journey-analysis",
         "./ml-skills/nba-scores",

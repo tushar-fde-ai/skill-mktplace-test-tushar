@@ -1,12 +1,8 @@
----
-name: fde-mta-workflow-setup
-description: |
-  MTA (Multi-Touch Attribution) Journey Analytics workflow configuration for Treasure Data. Use this skill to configure MTA journey analysis workflows. Trigger when users mention MTA, multi-touch attribution, channel attribution, Markov, Shapley, conversion paths, journey analytics, or marketing attribution.
----
+# MTA Workflow Setup Guide
 
-# MTA Journey Analytics — Workflow Setup
+Step-by-step guide for configuring and deploying the MTA Journey Analytics workflow in Treasure Data.
 
-This skill guides you through configuring and deploying the MTA Journey Analytics workflow in Treasure Data. The workflow builds a unified touchpoint journey from multiple data sources, then runs attribution models (Markov, Shapley) to measure channel contribution to conversions.
+The workflow builds a unified touchpoint journey from multiple data sources, then runs attribution models (Markov, Shapley) to measure channel contribution to conversions.
 
 ## What is MTA Journey Analytics?
 
@@ -30,7 +26,9 @@ Multi-Touch Attribution (MTA) analyzes the full customer journey across channels
 
 ### Step 1: Gather Requirements
 
-Ask the user:
+Walk through `requirements_doc.md` with the user — it covers Confluence folder lookup, customer name, ID Unification status, touchpoint sources, and conversion definition.
+
+For a quick setup without the full requirements gathering, ask the user:
 1. **What is the Treasure Data database name?** (e.g., `gldn_marketing`)
 2. **What counts as a conversion?** (e.g., purchase, form submit, thank-you page visit)
 3. **What is the user ID column?** (e.g., `canonical_id`)
@@ -38,7 +36,7 @@ Ask the user:
 
 ### Step 2: Explore the Customer's Database
 
-Use **Trino SQL** via **td-skills** to discover touchpoint source tables.
+Use **Trino SQL** via **tdx-skills** to discover touchpoint source tables.
 
 MTA requires tables that represent **marketing touchpoints**. Look for:
 
@@ -73,7 +71,7 @@ cd mta_journey_analysis/td_wf/mta_journey_agent
 
 The critical file to generate is: `mta_journey_agent/config/input_params.yml`
 
-**Reference**: Read `references/yaml_structure.md` for the complete YAML structure.
+**Reference**: Read `yaml_structure.md` for the complete YAML structure.
 
 #### Global Parameters
 
@@ -121,7 +119,7 @@ summary_table_top_k: 20            # top-K distinct values for summary stats
 
 Each table entry in `aggregate_metrics_tables` has MTA-specific columns for channel identification, UTM parsing, and conversion flagging.
 
-**Reference**: Read `references/table_configuration.md` for per-table-type guidance.
+**Reference**: Read `table_configuration.md` for per-table-type guidance.
 
 #### Pageviews / Web Activity
 
@@ -361,12 +359,6 @@ conversion_flag: 1.0
 # GOOD
 conversion_flag: 0.0
 ```
-
-## Progressive Disclosure
-
-- **Complete YAML structure**: Read `references/yaml_structure.md`
-- **Table-specific configuration**: Read `references/table_configuration.md`
-- **GitHub clone instructions**: Read `references/github_instructions.md`
 
 ## GitHub Repository
 

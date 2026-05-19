@@ -1,17 +1,13 @@
----
-name: fde-mta-prod-docs
-description: |
-  Production documentation for the MTA Journey Analytics workflow. Covers workflow architecture, output tables, attribution models, and operational runbook.
----
+# MTA Production Runbook
 
-# MTA Journey Analytics — Production Documentation
+Production architecture, output schema, and operational reference for the MTA Journey Analytics workflow.
 
 ## Workflow Overview
 
 The MTA Journey Analytics workflow builds a unified customer journey from multiple touchpoint sources, sessionizes interactions, and runs attribution models to measure channel contribution to conversions.
 
-**GitHub Repository**: `https://github.com/treasure-data-ps/mta_journey_analysis`
-**Workflow Path**: `mta_journey_analysis/td_wf/mta_journey_agent/`
+- **GitHub Repository**: `https://github.com/treasure-data-ps/mta_journey_analysis`
+- **Workflow Path**: `mta_journey_analysis/td_wf/mta_journey_agent/`
 
 ## Architecture
 
@@ -56,10 +52,12 @@ All written to `sink_database`:
 
 ## Configuration Reference
 
-See `workflow-setup/SKILL.md` for the full configuration workflow and `workflow-setup/references/` for:
+For workflow setup and configuration, see `../../workflow-setup/references/`:
+- `workflow_setup_guide.md` — full setup walkthrough
 - `yaml_structure.md` — complete parameter reference
 - `table_configuration.md` — per-table-type setup guide
 - `input_params_template.yml` — working example config
+- `requirements_doc.md` — requirements gathering template
 
 ## Operational Runbook
 
