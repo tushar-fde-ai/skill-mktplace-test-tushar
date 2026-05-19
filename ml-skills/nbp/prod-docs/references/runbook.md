@@ -1,8 +1,3 @@
----
-name: fde-nbp-prod-docs
-description: |
-  Production documentation for the NBP (Next Best Product) workflow. Covers workflow architecture, output tables, deployment, visualization, customer documentation, and operational runbook.
----
 
 # NBP — Production Documentation
 

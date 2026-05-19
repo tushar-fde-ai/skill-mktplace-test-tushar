@@ -1,20 +1,33 @@
 ---
 name: fde-nba-scores
 description: |
-  NBA (Next Best Action) Engagement Scores for Treasure Data. Configures workflows that union customer activity, derive per-profile Next Best Channel / Next Best Time / Next Best Campaign affinity scores plus cart-abandon and new-visitor flags, and write the combined output into Audience Studio. Trigger on: NBA, Next Best Action, engagement scores, channel affinity, time of day affinity, cart abandon, new visitor, NBA dashboard.
+  NBA (Next Best Action) Engagement Scores for Treasure Data. Configures workflows that union customer activity, derive per-profile Next Best Channel / Next Best Time / Next Best Campaign affinity scores plus cart-abandon and new-visitor flags, and write the combined output into Audience Studio. Trigger on: NBA, Next Best Action, engagement scores, channel affinity, time of day affinity, cart abandon, new visitor, NBA dashboard, requirements gathering for NBA, NBA workflow setup, NBA configuration, NBA runbook.
 ---
 
 # NBA Engagement Scores
 
 Next Best Action (NBA) workflow that unions customer behavioral data from multiple sources, scores per-profile engagement across **Channel** (where), **Time of Day** (when), and **Campaign** (what), and combines the metrics into a single profile-level table that can be joined to a Parent Segment in Audience Studio.
 
-## Sub-Folder Routing
+## Pick the right reference for the task
 
-| Task | Action |
-|------|--------|
-| Configure the NBA workflow (`input_params.yml`) | Read `workflow-setup/SKILL.md` |
-| Build / deploy the NBA Insights companion Foundry agent | Read `agent-skills/SKILL.md` |
-| Production docs, output tables, operational runbook | Read `prod-docs/SKILL.md` |
+| If the user wants to... | Read |
+|---|---|
+| Gather requirements before configuring (Confluence folder, parent segment, scoring strategy, business windows) | `workflow-setup/references/requirements_doc.md` |
+| Configure the workflow / generate `input_params.yml` end-to-end | `workflow-setup/references/workflow_setup_guide.md` |
+| Look up YAML parameter reference | `workflow-setup/references/yaml_structure.md` |
+| Configure a specific source type (pageviews / email / sales / orders / custom) | `workflow-setup/references/table_configuration.md` |
+| See a working example config | `workflow-setup/references/input_params_template.yml` |
+| Clone the repo / push to GitHub / set secrets | `workflow-setup/references/github_instructions.md` |
+| Production runbook — architecture, output tables, monitoring, failure modes | `prod-docs/references/runbook.md` |
+| Customer-facing documentation template | `prod-docs/references/customer_docs.md` |
+| Technical handoff document for ops/CSMs | `prod-docs/references/technical_handoff.md` |
+
+## Companion agent skills (separate entry points)
+
+These are registered as their own skills — they trigger directly from user prompts, no need to route through this file:
+
+- **`fde-nba-scores-foundry-skill`** — deploy the NBA Insights AI Foundry agent template to a customer's TD instance
+- **`fde-nba-scores-insights-agent`** — query the NBA dashboard tables (`nba_dash_*`) directly in Treasure Work to summarize runs, compare two runs, explain score distributions
 
 ## Quick Reference
 
@@ -45,3 +58,12 @@ Set via `scoring_logic` in `input_params.yml`:
 | `percentile` | Default for evenly distributed activity. Score = percentile rank within audience. |
 | `quartile` | Coarse 4-bucket banding. Easier to communicate to marketers. |
 | `minmax` | Hivemall min-max scaling. Best when activity distribution is heavily skewed. |
+
+## Standard Workflow
+
+When a user asks to set up NBA from scratch, follow this sequence:
+1. Walk through `workflow-setup/references/requirements_doc.md` to gather inputs (parent segment, scoring strategy, cart-abandon / new-visitor windows, time-of-day granularity, ESP) and locate the customer's Confluence folder
+2. Use `tdx-skills:tdx-basic` to explore the customer's TD database and confirm tables/columns
+3. Generate `input_params.yml` using `workflow-setup/references/workflow_setup_guide.md` and the per-source guidance in `table_configuration.md`
+4. Present the YAML to the user, get confirmation, then push via `tdx wf push -y`
+5. After deploy, document the configuration on Confluence under the customer's NBA sub-folder
