@@ -4,6 +4,20 @@ Collect all information needed to configure the MTA workflow before touching any
 
 ## Step 1: Locate the Customer's Confluence Folder
 
+> ⚠️ **CRITICAL — Confluence requires unique page titles per space.** Every page you create in the CUST space MUST suffix the title with the customer name. Use the patterns below — never create a page titled simply `FDE Solutions`, `MTA Journey Analytics`, or `MTA Requirements Gathering` because those titles already exist for other customers and the create call will fail with a 400 error.
+>
+> | Page type | Required title pattern |
+> |---|---|
+> | Customer root folder | `<Customer Name>` (e.g. `Test Customer Treasure Bikes`) |
+> | FDE/ML solutions sub-folder | `FDE Solutions - <Customer Name>` |
+> | MTA solution sub-folder | `MTA Journey Analytics - <Customer Name>` |
+> | Requirements gathering page | `MTA Requirements Gathering - <Customer Name>` |
+> | Configuration summary page | `MTA Configuration Summary - <Customer Name>` |
+> | Architecture & schema page | `MTA Architecture & Output Schema - <Customer Name>` |
+> | Runbook page | `MTA Runbook & Maintenance - <Customer Name>` |
+>
+> When **searching** for an existing folder by title, search for the un-suffixed name first (some legacy pages use the old un-suffixed pattern), then fall back to the suffixed version.
+
 The customer documentation lives in the **Customers** Confluence space (CUST), organized by region:
 
 ```
@@ -82,9 +96,9 @@ createConfluencePage:
   cloudId: treasure-data.atlassian.net
   spaceId: 9797636
   parentId: <customer_folder_page_id>
-  title: "FDE Solutions"
+  title: "FDE Solutions - <Customer Name>"   # MUST be suffixed — Confluence enforces unique titles per space
   contentFormat: markdown
-  body: "Landing page for Forward Deployed Engineering solutions deployed for this customer."
+  body: "Landing page for Forward Deployed Engineering solutions deployed for <Customer Name>."
 ```
 
 ### Step 1c: Locate or Create the MTA Sub-Folder
@@ -118,9 +132,9 @@ createConfluencePage:
   cloudId: treasure-data.atlassian.net
   spaceId: 9797636
   parentId: <ml_fde_folder_page_id>
-  title: "MTA Journey Analytics"
+  title: "MTA Journey Analytics - <Customer Name>"   # MUST be suffixed — Confluence enforces unique titles per space
   contentFormat: markdown
-  body: "Multi-Touch Attribution journey analytics workflow documentation for this customer."
+  body: "Multi-Touch Attribution journey analytics workflow documentation for <Customer Name>."
 ```
 
 ### Store the Folder IDs
@@ -129,14 +143,15 @@ Save both:
 - **ML/FDE sub-folder page ID**
 - **MTA sub-folder page ID** — you'll use this as the `parentId` when creating documentation pages in Phase 5
 
-The final page hierarchy will be:
+The final page hierarchy will be (every page suffixed with the customer name):
 ```
-[Customer Folder]
-└── FDE Solutions (or ML & Analytics Projects, etc.)
-    └── MTA Journey Analytics          ← parentId for Phase 5
-        ├── MTA Configuration Summary
-        ├── MTA Architecture & Output Schema
-        └── MTA Runbook & Maintenance
+<Customer Name>
+└── FDE Solutions - <Customer Name>                       (or legacy: ML & Analytics Projects - <Customer Name>)
+    └── MTA Journey Analytics - <Customer Name>           ← parentId for Phase 5
+        ├── MTA Requirements Gathering - <Customer Name>
+        ├── MTA Configuration Summary - <Customer Name>
+        ├── MTA Architecture & Output Schema - <Customer Name>
+        └── MTA Runbook & Maintenance - <Customer Name>
 ```
 
 ## Step 2: Check for Existing Requirements Doc
