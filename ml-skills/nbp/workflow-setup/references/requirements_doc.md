@@ -1,0 +1,430 @@
+# Phase 1: Requirements Gathering
+
+Collect all information needed to configure the NBP workflow before touching any configuration files.
+
+## Step 1: Locate the Customer's Confluence Folder
+
+The customer documentation lives in the **Customers** Confluence space (CUST), organized by region:
+
+```
+Customers (CUST, space ID: 9797636)
+├── US/ROWs    (page ID: 44728439)    → customer folders alphabetically
+├── Japan      (page ID: 643963288)   → customer folders
+└── Korea      (page ID: 1824266587)  → customer folders
+```
+
+Ask the user to identify the customer's Confluence folder using **one of two methods**:
+
+### Method A: Search by Customer Name (Preferred)
+
+Ask: **What is the customer name?**
+
+Then search for their folder in the CUST space:
+
+```
+searchConfluenceUsingCql:
+  cloudId: treasure-data.atlassian.net
+  cql: space = "CUST" AND type = page AND title ~ "<customer_name>"
+  limit: 10
+```
+
+From the results, identify the correct page by checking:
+1. The page title matches or closely matches the customer name
+2. The page's `parentId` is one of the three region pages (`44728439`, `643963288`, `1824266587`) — confirming it's a top-level customer folder, not a deeply nested subpage
+
+If multiple matches are found, show them to the user and ask which one is correct.
+If no matches are found, ask the user to provide a direct link (Method B).
+
+### Method B: User Provides a Page URL or ID
+
+Ask: **Can you paste a link to any page in the customer's Confluence folder?**
+
+Extract the page ID from the URL. Confluence URLs look like:
+- `https://treasure-data.atlassian.net/wiki/spaces/CUST/pages/<pageId>/Page+Title`
+- `https://treasure-data.atlassian.net/wiki/x/<tinyId>` (tiny link — pass the `tinyId` to `getConfluencePage` as the `pageId`)
+
+Once you have the page ID, read the page to get its `parentId`. If the page itself is the customer folder (i.e., its parent is a region page), use its ID. Otherwise, walk up the tree until you find the customer-level folder.
+
+### Step 1b: Locate or Create the FDE Solutions Sub-Folder
+
+Documentation pages should live under an **FDE Solutions** sub-folder within the customer folder — not directly under the customer root.
+
+**Search for an existing sub-folder**:
+
+Get the direct children of the customer folder and look for a match:
+
+```
+getConfluencePageDescendants:
+  cloudId: treasure-data.atlassian.net
+  pageId: <customer_folder_page_id>
+  depth: 1
+  limit: 50
+```
+
+Scan the results for a page whose title matches any of these patterns (case-insensitive):
+- `FDE Solutions`
+- `ML & Analytics Solutions`
+- `ML & Analytics Projects`
+- `ML Solutions`
+- `ML Projects`
+- `Analytics Solutions`
+- `Analytics Projects`
+- `FDE`
+
+Also match titles that include the customer name as a suffix (e.g., `ML & Analytics Projects - SCI`).
+
+If a match is found, use that page's ID.
+
+**If no match is found**, create the sub-folder:
+
+```
+createConfluencePage:
+  cloudId: treasure-data.atlassian.net
+  spaceId: 9797636
+  parentId: <customer_folder_page_id>
+  title: "FDE Solutions"
+  contentFormat: markdown
+  body: "Landing page for Field Data Engineering solutions deployed for this customer."
+```
+
+### Step 1c: Locate or Create the NBP Sub-Folder
+
+Within the ML/FDE sub-folder, create (or find) a folder specific to the NBP project. This keeps NBP documentation separate from other ML solutions (RFM, Lead Scoring, etc.).
+
+**Search for an existing NBP folder**:
+
+Get the direct children of the ML/FDE sub-folder:
+
+```
+getConfluencePageDescendants:
+  cloudId: treasure-data.atlassian.net
+  pageId: <ml_fde_folder_page_id>
+  depth: 1
+  limit: 50
+```
+
+Scan the results for a page whose title matches any of these patterns (case-insensitive):
+- `Next Best Product`
+- `NBP`
+- `Product Recommendations`
+
+If a match is found, use that page's ID.
+
+**If no match is found**, create the sub-folder:
+
+```
+createConfluencePage:
+  cloudId: treasure-data.atlassian.net
+  spaceId: 9797636
+  parentId: <ml_fde_folder_page_id>
+  title: "Next Best Product (NBP)"
+  contentFormat: markdown
+  body: "Next Best Product recommendation workflow documentation for this customer."
+```
+
+### Store the Folder IDs
+
+Save both:
+- **ML/FDE sub-folder page ID**
+- **NBP sub-folder page ID** — you'll use this as the `parentId` when creating documentation pages in Phase 5
+
+The final page hierarchy will be:
+```
+[Customer Folder]
+└── FDE Solutions (or ML & Analytics Projects, etc.)
+    └── Next Best Product (NBP)         ← parentId for Phase 5
+        ├── NBP Configuration Summary
+        ├── NBP Architecture & Output Schema
+        └── NBP Runbook & Maintenance
+```
+
+## Step 2: Check for Existing Requirements Doc
+
+Ask the user:
+
+> Do you have an existing filled-out requirements gathering doc? If yes, paste the Confluence link.
+
+If provided, read the page content using `getConfluencePage` and extract whatever configuration details are available (database, tables, columns, model type, etc.). Use the extracted values to pre-fill later steps, but still validate everything through auto-discovery.
+
+## Step 3: Collect Initial Requirements
+
+Ask the user for the following:
+
+1. **What is the Treasure Data database name?** (e.g., `gldn`, `ecommerce_prod`)
+2. **What site/region is their TD account on?** (determines API endpoint)
+3. **Which model engine?** `hive` (custom Hivemall CF) or `automl` (ml-batch-api with ALS/similar_to_latest/popular)
+4. **How many recommendations per user?** (default: 5)
+
+### Site / API Endpoint Mapping
+
+| Site      | API Endpoint | ml-batch-api (automl only) |
+|-----------|-------------|----------------------------|
+| aws       | `api.treasuredata.com` | `https://ml-batch-api.treasuredata.com` |
+| aws-tokyo | `api.treasuredata.co.jp` | `https://ml-batch-api.treasuredata.co.jp` |
+| eu01      | `api.eu01.treasuredata.com` | `https://ml-batch-api.eu01.treasuredata.com` |
+| ap02      | `api.ap02.treasuredata.com` | `https://ml-batch-api.ap02.treasuredata.com` |
+| ap03      | `api.ap03.treasuredata.com` | `https://ml-batch-api.ap03.treasuredata.com` |
+
+## Step 4: Discover the Transaction Table
+
+**IMPORTANT**: Always use **Trino/Presto SQL queries** via **td-skills**.
+
+NBP requires a **transaction/interaction table** with item-level granularity — each row represents one user interacting with one item.
+
+### Finding Candidate Tables
+
+```sql
+-- List all tables
+SHOW TABLES IN database_name;
+
+-- Search for transaction/order tables
+SHOW TABLES IN database_name LIKE '%order%';
+SHOW TABLES IN database_name LIKE '%item%';
+SHOW TABLES IN database_name LIKE '%purchase%';
+SHOW TABLES IN database_name LIKE '%transaction%';
+SHOW TABLES IN database_name LIKE '%product%';
+SHOW TABLES IN database_name LIKE '%interaction%';
+SHOW TABLES IN database_name LIKE '%rating%';
+
+-- TD CDP enriched tables
+SHOW TABLES IN database_name LIKE 'enriched_%';
+SHOW TABLES IN database_name LIKE 'enrich_%';
+```
+
+### Checking Table Schema
+
+```sql
+DESCRIBE database_name.candidate_table;
+```
+
+Look for:
+- A user ID column (`td_canonical_id`, `canonical_id`, `user_id`, `customer_id`)
+- An item/product ID column (`item_sku`, `product_id`, `item_id`)
+- A timestamp column (`time`, `timestamp`, `event_time`)
+
+### Verifying Item-Level Granularity
+
+This is the **most critical check**. Each row must be a user-item interaction:
+
+```sql
+SELECT * FROM database_name.candidate_table LIMIT 10;
+```
+
+**Good** — item-level granularity:
+```
+td_canonical_id | item_sku | item_name      | item_category | time
+u001            | SKU123   | Running Shoes  | Footwear      | 1700000000
+u001            | SKU456   | T-Shirt        | Apparel       | 1700000001
+u002            | SKU123   | Running Shoes  | Footwear      | 1700000002
+```
+
+**Bad** — order-level (no item column):
+```
+td_canonical_id | order_total | time
+u001            | 150.00      | 1700000000
+```
+
+**Bad** — aggregated (one row per user):
+```
+td_canonical_id | total_orders | total_spend
+u001            | 15           | 2500.00
+```
+
+If a table has both `order_id` and `product_id`, it's line-item level — use it directly.
+
+### NOT Suitable as Primary Source
+
+- **Order-level tables** (one row per order, no item column) — need line-item granularity
+- **Aggregated/summary tables** (`user_summary`, `rfm_output`) — no item detail
+- **User profile tables** (`customer_attributes`) — no item interactions
+- **Event tables without item IDs** (`pageviews`, `sessions`) — no item mapping
+
+### Multi-Event Tables
+
+If the table has multiple event types (view, add_to_cart, purchase), confirm which events represent meaningful interactions:
+
+```sql
+SELECT DISTINCT event_type, COUNT(*)
+FROM database_name.user_events
+GROUP BY event_type ORDER BY COUNT(*) DESC;
+```
+
+**Signal strength ranking**: `purchase` > `add_to_cart` > `view` > `click`
+
+Filter to the strongest signal available.
+
+## Step 5: Discover the Item Info Table
+
+NBP enriches recommendations with item names and categories. The item info can come from:
+- **The same transaction table** (if it has `item_name`, `item_category` columns alongside transactions)
+- **A separate catalog/product table** (e.g., `products`, `item_catalog`)
+
+### Same Table (Most Common)
+
+Check if the transaction table already contains item metadata:
+
+```sql
+SELECT
+  COUNT(DISTINCT item_sku) AS total_items,
+  COUNT(DISTINCT CASE WHEN item_name IS NOT NULL THEN item_sku END) AS items_with_name,
+  COUNT(DISTINCT CASE WHEN item_category IS NOT NULL THEN item_sku END) AS items_with_category
+FROM database_name.candidate_table;
+```
+
+If coverage is > 90%, use the same table.
+
+### Separate Table
+
+If item metadata lives elsewhere, find the catalog table:
+
+```sql
+SHOW TABLES IN database_name LIKE '%product%';
+SHOW TABLES IN database_name LIKE '%catalog%';
+SHOW TABLES IN database_name LIKE '%item%';
+```
+
+**Verify the join will work** — item IDs must match between tables:
+
+```sql
+SELECT
+  (SELECT COUNT(DISTINCT CAST(item_sku AS VARCHAR)) FROM database_name.transactions) AS tx_items,
+  (SELECT COUNT(DISTINCT CAST(item_id AS VARCHAR)) FROM database_name.product_catalog) AS catalog_items;
+
+-- Sample the join
+SELECT t.item_sku, i.product_name, i.category
+FROM database_name.transactions t
+JOIN database_name.product_catalog i ON CAST(t.item_sku AS VARCHAR) = CAST(i.item_id AS VARCHAR)
+LIMIT 10;
+```
+
+The workflow casts item IDs to VARCHAR for the join. The values must still match after casting (e.g., `12345` = `12345`, not `12345` vs `SKU-12345`).
+
+## Step 6: Column Name Discovery
+
+For the transaction table, identify:
+
+| Column | Common Names | Priority |
+|--------|-------------|----------|
+| User ID | `td_canonical_id`, `canonical_id`, `cdp_profile_id`, `user_id` | `td_canonical_id` > `canonical_id` > `user_id` |
+| Item ID | `item_sku`, `product_id`, `item_id`, `sku` | `item_sku` > `product_id` > `item_id` |
+| Timestamp | `time`, `timestamp`, `event_time`, `created_at` | `time` (TD standard) |
+
+For the item info table (can be the same table):
+
+| Column | Common Names | Priority |
+|--------|-------------|----------|
+| Item Name | `item_name`, `product_name`, `title`, `name` | `item_name` > `product_name` |
+| Item Category | `item_category`, `category`, `department`, `brand` | `item_category` > `category` |
+
+**Watch out**: Don't confuse `order_id`, `transaction_id`, or `event_id` with item ID.
+
+### Discovery Queries
+
+```sql
+-- Find user ID columns
+SELECT column_name FROM information_schema.columns
+WHERE table_name = 'your_table'
+  AND (column_name LIKE '%canonical%' OR column_name LIKE '%user%'
+       OR column_name LIKE '%customer%' OR column_name LIKE '%cdp%');
+
+-- Find item ID columns
+SELECT column_name FROM information_schema.columns
+WHERE table_name = 'your_table'
+  AND (column_name LIKE '%sku%' OR column_name LIKE '%product%'
+       OR column_name LIKE '%item%' OR column_name LIKE '%article%');
+
+-- Find timestamp columns
+SELECT column_name, data_type FROM information_schema.columns
+WHERE table_name = 'your_table'
+  AND (column_name LIKE '%time%' OR column_name LIKE '%date%'
+       OR data_type LIKE '%timestamp%');
+
+-- Find item name/category columns
+SELECT column_name FROM information_schema.columns
+WHERE table_name = 'your_table'
+  AND (column_name LIKE '%name%' OR column_name LIKE '%title%'
+       OR column_name LIKE '%category%' OR column_name LIKE '%department%'
+       OR column_name LIKE '%brand%');
+```
+
+## Step 7: Analyze Exclusion Filter Candidates
+
+Discover what items or categories should be excluded from training and/or recommendations:
+
+```sql
+-- Check item categories — are there categories that shouldn't be recommended?
+SELECT item_category, COUNT(*) AS purchases
+FROM database_name.table_name
+GROUP BY 1 ORDER BY 2 DESC;
+
+-- Check for low-volume items
+SELECT item_sku, item_name, COUNT(*) AS purchases
+FROM database_name.table_name
+GROUP BY 1, 2 ORDER BY 3 ASC LIMIT 20;
+
+-- Check for test/internal products
+SELECT item_name, COUNT(*)
+FROM database_name.table_name
+WHERE LOWER(item_name) LIKE '%test%' OR LOWER(item_name) LIKE '%sample%'
+GROUP BY 1;
+```
+
+Common exclusion candidates:
+- Gift cards, memberships, subscriptions
+- Discontinued products
+- Test/internal products
+- Very low-volume items (1-2 purchases total)
+
+## Step 8: Validate Data Quality
+
+Run final validation before proceeding to configuration:
+
+```sql
+-- Row counts and cardinality
+SELECT
+  COUNT(*) AS total_rows,
+  COUNT(DISTINCT user_col) AS unique_users,
+  COUNT(DISTINCT item_col) AS unique_items,
+  CAST(COUNT(*) AS DOUBLE) / COUNT(DISTINCT user_col) AS avg_interactions_per_user
+FROM database_name.table_name;
+
+-- Check for NULLs in critical columns
+SELECT
+  COUNT(CASE WHEN user_col IS NULL THEN 1 END) AS null_users,
+  COUNT(CASE WHEN item_col IS NULL THEN 1 END) AS null_items,
+  COUNT(CASE WHEN time_col IS NULL THEN 1 END) AS null_time
+FROM database_name.table_name;
+
+-- Time range
+SELECT MIN(time_col) AS earliest, MAX(time_col) AS latest
+FROM database_name.table_name;
+```
+
+### Minimum Viable Data for NBP
+
+- `unique_users` > 100
+- `unique_items` > 10
+- `avg_interactions_per_user` > 1
+
+If these thresholds are not met, NBP won't add meaningful value. Discuss with the customer.
+
+## Exit Criteria Checklist
+
+Before proceeding to Phase 2, confirm you have:
+
+- [ ] Customer Confluence folder page ID
+- [ ] ML/FDE Solutions sub-folder page ID
+- [ ] NBP sub-folder page ID (for Phase 5 documentation)
+- [ ] Database name
+- [ ] TD site / API endpoint
+- [ ] Model engine choice (`hive` or `automl`)
+- [ ] Transaction table name (item-level granularity verified)
+- [ ] Item info table name (same or separate, join verified)
+- [ ] User ID column name
+- [ ] Item ID column name
+- [ ] Timestamp column name
+- [ ] Item name column name
+- [ ] Item category column name
+- [ ] Exclusion requirements (what to exclude, which method)
+- [ ] Data quality validated (sufficient users, items, no critical NULLs)
+- [ ] Number of recommendations per user
