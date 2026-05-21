@@ -22,6 +22,7 @@ Route to the correct sub-skill based on the user's request. These are non-ML sol
 |----------|--------|--------|
 | Audience agent, custom audience agent, CDP audience agent, segment agent, parent segment agent | Ready | Read `custom-audience-agent/SKILL.md` |
 | Analytics agent, custom analytics agent, data analytics agent, reporting agent, dashboard agent, BI agent | Scaffold (template pending) | Read `custom-analytics-agent/SKILL.md` (TODO sections need filling once template lands) |
+| Export audience agent as skill, convert custom audience agent to a Claude skill, bundle [customer] audience agent for upload, make audience agent portable | Ready | Read `agent-export/SKILL.md` |
 | Segment analytics, segment reporting, CDP reporting, audience reporting, ad-hoc segment analysis | Scaffold only | Inform user — `segment-analytics/` not yet implemented |
 
 If the user's request doesn't clearly match one solution, ask: "Are you looking to build a custom AI audience agent on top of an existing parent segment, a general analytics agent in a fresh project, or set up segment reporting?"
@@ -36,6 +37,9 @@ Creates a fresh LLM project for general analytics + dashboard generation against
 
 ### Segment Analytics (Scaffold Only)
 Ad-hoc analytics and reporting tooling for CDP segments — pre-built queries, dashboard templates, reporting workflows. Not yet implemented.
+
+### Audience Agent Exporter (Ready)
+Tool, not a solution. Converts a deployed Custom Audience Agent (Foundry project on disk) into a single self-contained Claude/Treasure Work SKILL.md, then pushes the artifact to `fde-skills-experiment` on a per-conversion branch + PR. Lives at `agent-export/`. Used after a customer's audience agent has gone through Phase 5 and you want a portable reference-instruction version of it.
 
 ## Shared Patterns
 
