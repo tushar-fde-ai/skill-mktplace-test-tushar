@@ -1,93 +1,149 @@
 ---
-name: fde-custom-audience-agent
+name: custom-audience-agent
 description: |
-  Build and deploy a custom AI Foundry audience agent for CDP parent segment analysis. Covers data exploration, requirements gathering, agent template setup from GitHub, and eval framework creation. 
+  Customize and deploy a custom AI Foundry audience agent on top of an existing TD-Managed parent segment project. Trigger on: audience agent, custom audience agent, CDP audience agent, segment agent, parent segment agent, audience copilot, marketing copilot customization. Push-first workflow → customer requirements gathering on Confluence → two-round test cases → customer-specific documentation.
 ---
 
 # Custom Audience Agent
 
-Build and deploy a custom AI Foundry agent that analyzes CDP parent segment data — queries customer attributes, behaviors, and segment membership to answer business questions via natural language.
+Customize and deploy a custom AI Foundry agent that analyzes CDP parent segment data — queries customer attributes, behaviors, and existing segments to answer business questions via natural language and draft new segment rules.
+
+## Mental Model
+
+When a parent segment is set up in TD, the platform auto-provisions an AI project named `TD-Managed: <Parent Segment Name>` containing 3 **read-only** TD-Managed agents. Those cannot be edited.
+
+To customize behavior, we **push a parallel set of agents into that same project**:
+- `Custom Audience Agent` (main, gpt-4.1)
+- `Clone Data Source Finder` (gpt-4.1 mirror)
+- `Clone Questions Suggester` (gpt-4.1 mirror)
+- Custom knowledge bases (`business_context.md`, optionally `sql_templates.md`)
+- Chat integration that points at the Custom Audience Agent prompt
+
+The `TD-Managed: *` agent directories in the template repo are reference copies only — they must be deleted locally before push.
+
+## Template Repo
+
+```
+https://github.com/tushar-fde-ai/custom-audience-agent
+```
+
+## Solution-specific configuration
+
+These values are passed into the shared patterns:
+
+| Field | Value |
+|------|-------|
+| Solution folder name | `Custom Audience Agent` |
+| Solution folder title variants | `Audience Agent`, `Custom Agent`, `Custom Audience Agent` |
+| Push pattern | `../shared/push_pattern_td_managed.md` |
+| Read-only platform agents to delete locally | `TD-Managed: Marketing Copilot`, `TD-Managed: Data Source Finder`, `TD-Managed: Questions Suggester` |
+| Integration check substring | `name: "Custom Audience Agent"` (in `integrations/chat_parent_segment.yml` `actions:` block) |
+
+## Entry Point — Where to Start
+
+Before starting any phase, ask the user: **"Is this a new audience agent engagement, or are you resuming an existing one?"**
+
+- **New engagement:** start at Phase 1.
+- **Resume:** ask for the customer name, search Confluence for `Current Project State — <Customer>` (see `../shared/current_project_state.md`). Read it — its "Current phase" + "Next Action" fields say where to pick up. If no State page exists, treat as new but skip already-done steps.
+
+Common phrases mapped to phases (when a customer name is given):
+
+| User says | Likely phase |
+|---|---|
+| "the customer filled out their requirements" / "their answers came back" | Phase 5 |
+| "let's run tests on the agent" | Phase 4 (Round 1) if `business_context.md` is empty, Phase 5 (Round 2) if it has customer content — check Current Project State |
+| "the agent's responses need tweaking" / "fix this failing test case" | Phase 5 iteration loop |
+| "write the docs / Confluence pages for the agent" | Phase 6 |
+| "push a fresh audience agent for [parent segment]" | Phase 1 → Phase 2 |
+| "create the requirements doc for the customer" | Phase 3 (assumes Phase 2 push already done) |
+
+When in doubt, **read Current Project State first** — it's authoritative.
 
 ## Workflow Sequence
 
-Follow these phases in order. Each phase has its own reference doc in the appropriate sub-folder.
+The flow is **push first, gather requirements second, test third, document last.** Push goes out with a placeholder `business_context.md`; Phase 5 fills it in once the customer responds. Round-1 test failures become explicit asks in the customer requirements doc.
 
-### Phase 1: Explore Data
+This flow spans multiple sessions. Phase 3 ends with the customer being asked to fill out a Confluence page; the FDE engineer typically resumes in a later session at Phase 4 or 5.
 
-Discover the customer's CDP data structure before gathering requirements.
+### Phase 1: Lightweight Parent Segment Discovery
 
-1. Ask for the **TD database name** (or parent segment name)
-2. Use `tdx ps desc -o` or `tdx describe` to get the schema
-3. List all tables and columns — identify customer attributes, behaviors, and key dimensions
-4. Sample data to understand column values, cardinality, and data quality
-5. Present findings to the user
+Just enough to know which project to push into. Read `../shared/push_pattern_td_managed.md` Step 1 for the project discovery flow (`tdx llm project list ... | grep "TD-Managed:"` with fallback).
 
-Use **td-skills** (`tdx describe`, `tdx query`) and **parent-segment-analysis** skill for CDP-specific exploration.
+Audience-specific:
+1. Ask for the **parent segment name**.
+2. Project discovery as per shared push pattern.
+3. Quick schema sanity check using `tdx-skills:parent-segment-analysis`: `tdx ps desc <parent-segment-name> -o`.
 
-### Phase 2: Gather Requirements
+### Phase 2: Push Minimal Custom Audience Agent
 
-Read `agent-setup/references/requirements_doc.md` for the full requirements gathering workflow.
+Read `../shared/push_pattern_td_managed.md` for the full push flow (clone, set tdx.json, integration check, `rm -rf TD-Managed:*`, `tdx agent push -y`). Read `agent-setup/SKILL.md` for the audience-specific files-to-edit table.
 
-Key decisions to collect:
-1. **Customer name** and Confluence folder location
-2. **Which tables/columns** the agent should have access to (from Phase 1 findings)
-3. **Business context** — what questions should the agent answer? What KPIs matter?
-4. **Target users** — who will use this agent? (marketing, analytics, CS, executives)
-5. **Output format preferences** — charts (Plotly), tables, summaries, or mixed
-6. **Any data restrictions** — columns to exclude (PII, internal IDs, etc.)
+Audience-specific:
+- Template repo: `https://github.com/tushar-fde-ai/custom-audience-agent`
+- Don't edit `business_context.md` yet — the shipped placeholder is fine for first push. Phase 5 fills it in.
+- Integration check substring: `name: "Custom Audience Agent"`
+- Read-only dirs to delete: `TD-Managed: Marketing Copilot`, `TD-Managed: Data Source Finder`, `TD-Managed: Questions Suggester`
 
-### Phase 3: Setup AI Foundry Agent
+After push, update **Current Project State**: Phase 2 complete, project name, push date.
 
-Read `agent-setup/SKILL.md` for the full agent setup workflow.
+### Phase 3: Create Customer Requirements Doc on Confluence
 
-1. Clone the audience agent template from the GitHub repo
-2. Configure knowledge bases to point to the customer's database/tables
-3. Update `business_context.md` with customer-specific context from Phase 2
-4. Update `data_dictionary.md` with the actual schema from Phase 1
-5. Choose project name and update `tdx.json`
-6. Create the LLM project: `tdx llm project create "<name>"`
-7. Present the agent structure for user confirmation
-8. Push: `tdx agent push -y`
+Read `../shared/confluence_folder_setup.md` for folder discovery + creation (the `Custom Audience Agent` folder under `<Customer>/FDE Solutions/`).
 
-### Phase 4: Create Eval Framework
+Read `../shared/current_project_state.md` for the State page setup — create it now, before the requirements doc.
 
-Read `agent-setup/references/eval.md` for eval framework guidelines.
+Read `../shared/requirements_doc_pattern.md` for the customer-shareable page workflow.
 
-1. Generate a set of **test prompts** based on:
-   - The tables and columns discovered in Phase 1
-   - The business questions identified in Phase 2
-   - Edge cases (empty results, ambiguous questions, cross-table joins)
-2. Create `test.yml` with criteria for each prompt
-3. Run eval: `tdx agent test`
-4. Review results, refine prompts and agent configuration
-5. Document final eval results
+Audience-specific:
+- Page title: `Audience Agent Requirements — <Customer>`
+- Body template (the 9-section customer-fillable form): see `agent-setup/references/requirements_doc.md`
 
-### Phase 5: Documentation
+### Phase 4: Generate Test Cases (Round 1 — Empty Context)
 
-Read `prod-docs/SKILL.md` for documentation guidelines.
+Read `../shared/test_cases_pattern.md` for the full test-case lifecycle (TC-IDs, Confluence page format, `tdx agent test`, `updateConfluencePage` mechanics).
 
-1. Create Confluence pages under the customer's FDE Solutions folder:
-   - Requirements summary
-   - Agent architecture and table access
-   - Eval results and test prompts
-2. Follow the Confluence folder structure from `agent-setup/references/requirements_doc.md` Step 1
+If resuming in a new session, **first read Current Project State**.
+
+Audience-specific:
+- Schema discovery skill: `tdx-skills:parent-segment-analysis`
+- 5 test categories: schema discovery, attribute queries, behavior aggregations, segment draft creation, ambiguous/guardrail
+- Optional 6th category if customer provides SQL templates in §9
+- Full category details + example prompts: `agent-setup/references/eval.md`
+
+### Phase 5: Update Agent with Customer Requirements (Round 2)
+
+Almost always a new session. **First action: read Current Project State.**
+
+Read `../shared/test_cases_pattern.md` for Round 2 + iteration loop. Read `agent-setup/SKILL.md` Phase 5 for the audience-specific re-push checklist.
+
+Audience-specific updates:
+1. Read filled requirements doc via `getConfluencePage`.
+2. Update `knowledge_bases/business_context.md` from customer answers (see `agent-setup/references/business_context_template.md`).
+3. If customer provided SQL templates in §9, create `knowledge_bases/sql_templates.md` (see `agent-setup/references/sql_templates_template.md`).
+4. Re-confirm pre-push state: `TD-Managed: *` directories absent locally, integration reference intact.
+5. `tdx agent push -y`.
+6. Re-run test cases (Round 2).
+
+Failure-to-fix mapping: see `agent-setup/references/eval.md` Round 2 section.
+
+### Phase 6: Customer-Specific Documentation
+
+Read `../shared/customer_docs_pattern.md` for the 5-page set + create order + keep-current rules.
+
+If resuming in a new session, **first read Current Project State**.
+
+Before authoring the Behavior page, `Read` the local `knowledge_bases/business_context.md` and (if present) `knowledge_bases/sql_templates.md`.
+
+Audience-specific page content: see `prod-docs/SKILL.md`.
 
 ## Sub-Folder Reference
 
-| Folder | Contents |
-|--------|----------|
-| `agent-setup/SKILL.md` | Agent template setup and deployment instructions |
-| `agent-setup/references/requirements_doc.md` | Requirements gathering workflow (Confluence setup, initial questions) |
-| `agent-setup/references/eval.md` | Eval framework and test prompt generation |
-| `prod-docs/SKILL.md` | Production documentation guidelines |
-| `prod-docs/references/customer_docs.md` | Confluence documentation creation workflow |
-| `prod-docs/references/eval.md` | Eval documentation template |
-
-## GitHub Repository
-
-The audience agent template is maintained at:
-```
-https://github.com/treasure-data-ps/audience_agent_template
-```
-
-(Update this URL once the template repo is available. Until then, agents are built from scratch using `tdx agent` skills.)
+| Folder / File | Contents |
+|---------------|----------|
+| `agent-setup/SKILL.md` | Audience-specific Phase 2 + Phase 5 file edits (which files to touch, which to leave alone) |
+| `agent-setup/references/requirements_doc.md` | The 9-section customer-fillable body template + Phase 5 mapping reference tables |
+| `agent-setup/references/business_context_template.md` | Minimal 5-section template for `business_context.md` |
+| `agent-setup/references/sql_templates_template.md` | Format for the optional `sql_templates.md` KB |
+| `agent-setup/references/eval.md` | Audience-specific test categories + example prompts + failure-to-fix mapping |
+| `prod-docs/SKILL.md` | Audience-specific content for the Phase 6 documentation page set |
+| `../shared/*.md` | Generic patterns reused by every solution under `general-skills/` |
