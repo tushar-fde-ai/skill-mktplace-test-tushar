@@ -27,7 +27,7 @@ If provided, read with `getConfluencePage` and skip ahead to Phase 5 (use existi
 ## Step 2: Create the Customer-Shareable Page
 
 The calling SKILL provides:
-- The page title (e.g., `Audience Agent Requirements — <Customer>`, `Analytics Agent Requirements — <Customer>`)
+- The page title (e.g., `Audience Agent Requirements - <Customer>`, `Analytics Agent Requirements - <Customer>`)
 - The body template (the actual customer-fillable questions — solution-specific)
 
 Create:
@@ -37,7 +37,7 @@ createConfluencePage:
   cloudId: treasure-data.atlassian.net
   spaceId: 9797636
   parentId: <solution_folder_page_id>
-  title: "<solution> Requirements — <Customer>"
+  title: "<solution> Requirements - <Customer>"   # MUST be suffixed — Confluence enforces unique titles per space
   contentFormat: markdown
   body: <calling-SKILL-provided body template>
 ```

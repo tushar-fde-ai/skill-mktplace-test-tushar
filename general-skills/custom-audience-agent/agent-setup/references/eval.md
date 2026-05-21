@@ -2,23 +2,27 @@
 
 This file holds the **audience-specific content** for the test case lifecycle. The generic two-round flow + Confluence page format + `tdx agent test` mechanics live in `../../../shared/test_cases_pattern.md`.
 
+**Round 1 vs Round 2 context:**
+- **Round 1** runs against the *schema-derived draft* of `business_context.md` (Phase 4 Step 2 in the parent SKILL — Priority Attributes + PII exclusions auto-populated from `tdx ps desc -o`). The agent knows real columns; failures should skew toward business-specific gaps (terms like "VIP", segment naming, business rules) rather than schema ignorance.
+- **Round 2** runs after the customer's filled requirements doc has been merged into `business_context.md` (Phase 5).
+
 ## Skills to Load
 
 - `tdx-skills:agent-test` — for `tdx agent test` mechanics, `test.yml` format, output parsing
-- `tdx-skills:parent-segment-analysis` — for schema discovery (Round 1 generation)
+- `tdx-skills:parent-segment-analysis` — for schema discovery (Phase 4 Step 1)
 
 ## Test Case Categories
 
 Generate 10-15 cases total, mixing complexity (simple / medium / complex) across these 5 (or 6) categories.
 
 ### 1. Schema Discovery (2-3 cases)
-Confirms the agent uses `data_source_finder` and reports data quality.
+Confirms the agent uses `data_source_finder` and reports data quality. With the Phase 4 schema-derived draft loaded, the agent should *succeed* here in Round 1 (not just attempt).
 
 - "What customer attributes are available?"
 - "Show me an overview of the parent segment."
 - "What behavior tables exist?"
 
-Pass criteria: mentions `customers` table + at least one `behavior_*` table; reports null ratios for high-null columns.
+Pass criteria: mentions `customers` table + at least one `behavior_*` table; reports null ratios for high-null columns; references the Priority Attributes from `business_context.md` when relevant.
 
 ### 2. Attribute Queries (2-3 cases)
 Single-table queries on the customers table.
@@ -42,7 +46,7 @@ Exercises the `:segment:` output.
 - "Create a segment of customers who [attribute condition] AND [behavior condition]."
 - "Create a segment that combines [existing_segment_name] but excludes [condition]."
 
-Pass criteria: calls `get_segment_draft_rules` first, produces valid JSON, acknowledges segment size before drafting, reuses `baseSegmentIds` for named-segment references.
+Pass criteria: produces valid JSON matching the `:segment:` output schema, acknowledges segment size before drafting, reuses `baseSegmentIds` for named-segment references.
 
 ### 5. Ambiguous / Guardrail (2-3 cases)
 Confirms the agent asks for clarification or refuses appropriately.
@@ -81,10 +85,9 @@ Pass criteria: agent references the template by name, adapts the SQL to the ques
 # TC-004
 - user_input: "Create a segment of VIP customers who haven't purchased in 90 days."
   criteria:
-    - The agent calls get_segment_draft_rules before creating the segment
-    - The agent reports the estimated segment size
+    - The agent reports the estimated segment size before drafting
     - The final segment JSON includes a behavioral condition (purchases) and an attribute condition (VIP indicator)
-    - The JSON is valid against the create_segment_draft schema
+    - The JSON is valid against the `:segment:` output schema
 ```
 
 Multi-round (Discovery → Execution) test for complex cases:

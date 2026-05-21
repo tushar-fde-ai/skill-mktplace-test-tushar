@@ -12,11 +12,12 @@ Convert a deployed `Custom Audience Agent` Foundry project (on disk) into a sing
 
 The deployed audience agent is a multi-agent Foundry project: `Custom Audience Agent` (main) + `Clone Data Source Finder` (sub-agent) + `Clone Questions Suggester` (sub-agent) + knowledge bases + chat integration. Most of that gets stripped:
 
-- **Keep:** Custom Audience Agent main prompt (Tone, Analysis Guidelines, Workflow), Clone Data Source Finder prompt logic (data discovery rules), `business_context.md`, optional `sql_templates.md`
-- **Strip:** Plotly output schema (Treasure Work renders charts natively via `mcp__work__render_chart`), segment draft JSON schema (handled by the `segment` Treasure Work skill), chat integration config (not applicable outside Foundry), `Clone Questions Suggester` (overkill for standalone), `get_segment_draft_rules.md` (handled by `segment` skill)
+- **Keep as instructions in SKILL.md:** Custom Audience Agent main prompt sections (Tone, Analysis Guidelines, Workflow, Guardrails), Clone Data Source Finder prompt logic (data discovery rules)
+- **Extract as `references/*.md` sub-files:** `business_context.md`, optional `sql_templates.md` — these can be large and are loaded at session start, not embedded in the main SKILL.md
+- **Strip entirely:** Plotly output schema (Treasure Work renders charts natively via `mcp__work__render_chart`), segment draft JSON schema (handled by the `segment` Treasure Work skill), chat integration config (not applicable outside Foundry), `Clone Questions Suggester` (overkill for standalone), `get_segment_draft_rules.md` (legacy gpt-only KB; no longer in current deployments)
 - **Delegate:** instead of inlining segment-creation logic, route to the `segment` skill. Instead of inlining schema discovery tools, route to `parent-segment-analysis`. Etc.
 
-The output is a single SKILL.md — no `references/` folder. Audience agents have small enough KBs that inlining keeps the artifact lightweight.
+The output is a **SKILL.md + references/ folder**. Splitting the customer's business context into `references/business_context.md` keeps the main SKILL.md compact and predictable regardless of customer size.
 
 ## Inputs
 
@@ -62,7 +63,7 @@ Skip reading these — they're stripped:
 
 ### Step 3: Synthesize the SKILL.md body
 
-Produce a single `SKILL.md` with this structure (filling in customer-specific content):
+Produce a `SKILL.md` (the orchestrator — instruction text only, no customer KB content) with this structure:
 
 ````markdown
 ---
@@ -81,13 +82,11 @@ Generated from the deployed Foundry project: `TD-Managed: <Parent Segment from t
 
 This is a **reference-instruction skill**, not a Foundry deployment. Live data access and structured outputs are handled differently than in the deployed agent — see "Excluded Capabilities" below.
 
-## Business Context
+## Initialization
 
-<verbatim content of knowledge_bases/business_context.md, with the YAML frontmatter block stripped. Preserve all sections: Business Model, Key Terms, Priority Attributes, Segment Naming Conventions, Exclusion Rules, plus any custom sections>
-
-## SQL Templates
-
-<only included if knowledge_bases/sql_templates.md exists. Verbatim content sans frontmatter. Otherwise this section is omitted entirely from the output>
+Before answering any question, read these reference files (once per session):
+1. Read [references/business_context.md](references/business_context.md) — customer business model, key terms, priority attributes, segment naming conventions, exclusion rules
+2. Read [references/sql_templates.md](references/sql_templates.md) — customer-supplied SQL patterns *(only include this line if the file exists)*
 
 ## Tone
 
@@ -135,8 +134,8 @@ When the user asks about attributes, behaviors, or segments:
 
 For any data analysis or segment creation request:
 
-### Initial Step: Load Business Context
-The Business Context section above is already loaded. Reread it if the user's question touches an unfamiliar term.
+### Initial Step: Load References
+The Initialization section above tells Claude to read business_context.md (and sql_templates.md if present) once per session. Reread if the user's question touches an unfamiliar term.
 
 ### Discovery Stage
 1. Announce that you're searching data sources via parent-segment-analysis
@@ -184,15 +183,35 @@ This skill does NOT cover (handled elsewhere):
 
 ## Updating This Skill
 
-If the customer's business context or SQL templates change, **re-run the audience-agent-exporter** against the updated Foundry project. Do not hand-edit this file — the source of truth is the deployed agent.
+If the customer's business context or SQL templates change, **re-run the audience-agent-exporter** against the updated Foundry project. Do not hand-edit `references/business_context.md` or `references/sql_templates.md` directly — the source of truth is the deployed agent.
 ````
+
+### Step 3.5: Synthesize the references/ files
+
+Write reference files alongside the SKILL.md, one per knowledge base from the deployed agent.
+
+#### `references/business_context.md`
+
+Verbatim copy of the deployed agent's `knowledge_bases/business_context.md` content, **with the YAML frontmatter (`---name:business_context---`) stripped**. Preserve all sections (Business Model, Key Terms, Priority Attributes, Segment Naming Conventions, Exclusion Rules, plus any custom sections the customer added).
+
+This file is read by Claude on session start per the SKILL.md Initialization section.
+
+#### `references/sql_templates.md` *(only if source agent has it)*
+
+Verbatim copy of the deployed agent's `knowledge_bases/sql_templates.md` content, frontmatter stripped. Preserve all template names, "Use when" descriptions, and SQL blocks.
+
+If the deployed agent doesn't have `sql_templates.md`, **don't create this file** and **remove the corresponding line** from the SKILL.md Initialization section.
 
 ### Step 4: Decide where to write
 
-The output artifact lives at:
+The output artifact is a directory containing the SKILL.md and a references/ subfolder:
 
 ```
-<fde-skills-experiment-clone>/general-skills/exports/<customer-slug>-audience-agent/SKILL.md
+<fde-skills-experiment-clone>/general-skills/exports/<customer-slug>-audience-agent/
+├── SKILL.md
+└── references/
+    ├── business_context.md
+    └── sql_templates.md          # only if source agent had it
 ```
 
 In the `fde-skills-experiment` clone provided by the user (or freshly cloned if needed):
@@ -200,41 +219,45 @@ In the `fde-skills-experiment` clone provided by the user (or freshly cloned if 
 1. `cd` to the clone path. If it doesn't exist, `git clone https://github.com/treasure-data-ps/fde-skills-experiment.git` to a fresh location and use that.
 2. `git checkout main && git pull origin main` to get latest
 3. `git checkout -b export/<customer-slug>-audience-agent` (per-conversion branch)
-4. `mkdir -p general-skills/exports/<customer-slug>-audience-agent`
-5. Write the synthesized SKILL.md to that path
-6. `git add general-skills/exports/<customer-slug>-audience-agent/SKILL.md`
-7. `git commit -m "Export <Customer> audience agent as skill"` (with co-author trailer)
-8. `git push -u origin export/<customer-slug>-audience-agent`
-9. Report the PR URL: `https://github.com/treasure-data-ps/fde-skills-experiment/pull/new/export/<customer-slug>-audience-agent`
+4. `mkdir -p general-skills/exports/<customer-slug>-audience-agent/references`
+5. Write the synthesized SKILL.md to `general-skills/exports/<customer-slug>-audience-agent/SKILL.md`
+6. Write `general-skills/exports/<customer-slug>-audience-agent/references/business_context.md` (verbatim from source, frontmatter stripped)
+7. If source had `sql_templates.md`, write `general-skills/exports/<customer-slug>-audience-agent/references/sql_templates.md` (verbatim, frontmatter stripped). Otherwise skip and ensure the SKILL.md Initialization section also has no reference to it.
+8. `git add general-skills/exports/<customer-slug>-audience-agent/`
+9. `git commit -m "Export <Customer> audience agent as skill"` (with co-author trailer)
+10. `git push -u origin export/<customer-slug>-audience-agent`
+11. Report the PR URL: `https://github.com/treasure-data-ps/fde-skills-experiment/pull/new/export/<customer-slug>-audience-agent`
 
 ### Step 5: Verify
 
 Before declaring done:
 
-- [ ] SKILL.md exists at the expected path
-- [ ] Frontmatter has correct `name` (matches `<customer-slug>-audience-agent`)
-- [ ] Frontmatter `description` includes trigger keywords specific to the customer
-- [ ] Business Context section is non-empty (the deployed `business_context.md` was filled in by Phase 5 of the audience-agent skill)
-- [ ] No remaining Foundry artifacts in the body: no `@ref(...)`, no `target_function:`, no `output_mode:`, no `:plotly:`, no `:segment:`
-- [ ] No JSON schemas in the body
-- [ ] No integration YAML
+- [ ] `general-skills/exports/<customer-slug>-audience-agent/SKILL.md` exists
+- [ ] `general-skills/exports/<customer-slug>-audience-agent/references/business_context.md` exists and is non-empty (the deployed `business_context.md` was authored in Phase 4 (schema-derived draft) and merged with customer answers in Phase 5)
+- [ ] If source agent had `sql_templates.md`, `general-skills/exports/<customer-slug>-audience-agent/references/sql_templates.md` exists; otherwise it's absent AND the SKILL.md Initialization section doesn't reference it
+- [ ] SKILL.md frontmatter has correct `name` (matches `<customer-slug>-audience-agent`)
+- [ ] SKILL.md frontmatter `description` includes trigger keywords specific to the customer
+- [ ] SKILL.md Initialization section correctly lists each existing reference file
+- [ ] No customer-specific business content lives in SKILL.md itself (only in references/) — `Read SKILL.md` and verify no "Business Context" / "SQL Templates" sections inline
+- [ ] No remaining Foundry artifacts anywhere: no `@ref(...)`, no `target_function:`, no `output_mode:`, no `:plotly:`, no `:segment:`, no JSON schemas, no integration YAML
 - [ ] Branch pushed; PR URL given to the user
 
 Report to the user:
-1. The path where the skill lives in the local clone (so they can review locally)
+1. The path where the skill lives in the local clone (so they can review locally — point at the directory, not just SKILL.md)
 2. The PR URL
 3. The triggers in the generated frontmatter description (so they know how the skill will be invoked)
-4. A note that they can edit the local file and re-push if anything needs tweaking
+4. A note that they can edit the local files and re-push if anything needs tweaking — but business_context.md / sql_templates.md edits should ideally happen in the source Foundry agent and be re-exported, not patched locally
 
 ## Edge Cases
 
-- **`business_context.md` is still the placeholder** ("You are an expert analyst") → the deployed agent hasn't gone through Phase 5 yet. Stop and tell the user the agent isn't ready for export. Suggest completing Phase 5 of the audience-agent skill first.
+- **`business_context.md` is still the placeholder** ("You are an expert analyst") → the deployed agent hasn't gone through Phase 4 (schema-derived draft) or Phase 5 (customer merge) of the audience-agent skill. Stop and tell the user the agent isn't ready for export. Suggest completing Phase 4 + Phase 5 first.
 - **Multiple audience-agent projects in the same `agents/` directory** → ask the user which one to convert.
-- **Customer slug collides with an existing export** (e.g., `acme-audience-agent` already exists in `general-skills/exports/`) → the export branch will fail to create cleanly. Ask the user whether to overwrite (existing branch gets force-pushed) or pick a different slug (e.g., `acme-audience-agent-v2`).
+- **Customer slug collides with an existing export** (e.g., `acme-audience-agent` already exists in `general-skills/exports/`) → the export branch will fail to create cleanly. Ask the user whether to overwrite (existing branch gets force-pushed, both SKILL.md and references/ replaced) or pick a different slug (e.g., `acme-audience-agent-v2`).
 - **`fde-skills-experiment` clone has uncommitted changes** → stop and ask the user to clean up first. Don't `git stash` automatically.
+- **Re-export over an existing folder where `sql_templates.md` was previously present but isn't anymore** → delete the stale `references/sql_templates.md` file and update the SKILL.md Initialization section accordingly (i.e., remove the line referencing it). Otherwise the skill will fail to load.
 
 ## What This Skill Doesn't Do
 
 - Doesn't push the converted skill to the Treasure Work skills cache (`~/.treasure-work/.claude/skills/`). The PR is the canonical artifact; the user installs the skill from that PR after merge.
 - Doesn't handle analytics-agent exports (different structure). A separate exporter would be needed for those.
-- Doesn't handle re-export → diff. If you re-run the converter against the same customer, it overwrites the local file and creates a new commit on the existing export branch.
+- Doesn't handle re-export → diff. If you re-run the converter against the same customer, it overwrites the local files and creates a new commit on the existing export branch.

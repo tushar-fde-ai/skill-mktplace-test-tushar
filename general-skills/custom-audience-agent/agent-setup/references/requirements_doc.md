@@ -2,16 +2,18 @@
 
 This file holds the **audience-specific content** for the customer-shareable requirements doc. The generic Confluence-page-creation flow lives in `../../../shared/requirements_doc_pattern.md` and `../../../shared/confluence_folder_setup.md`.
 
+**Customer-facing form, not pre-filled.** The body template below is sent to the customer as a blank form. The FDE engineer separately writes a schema-derived draft of `business_context.md` in Phase 4 (Priority Attributes + PII columns inferred from `tdx ps desc -o`). The customer's answers in §4 Priority Attributes and §6 Exclusions merge with that draft in Phase 5 — customer wins on conflict; schema defaults fill gaps. See `business_context_template.md` for the merge rule.
+
 ## Page title
 
-`Audience Agent Requirements — <Customer>`
+`Audience Agent Requirements - <Customer>` (every Confluence page title must be suffixed with the customer name — Confluence enforces unique titles per space)
 
 ## Body template
 
 Use this body when calling `createConfluencePage` — phrased for the customer to fill in directly:
 
 ````markdown
-# Audience Agent Requirements — <Customer>
+# Audience Agent Requirements - <Customer>
 
 **Purpose:** Help us tailor the Custom Audience Agent to your business. Please fill in each section below. None of the fields are mandatory, but the more you provide, the better the agent will understand your data and respond to your team's questions.
 

@@ -14,6 +14,8 @@ Customize and deploy a custom AI Foundry analytics agent — queries any TD data
 
 Unlike the audience agent (which customizes an existing `TD-Managed: <Parent Segment>` project), the analytics agent **runs in a fresh LLM project** created via `tdx llm project create`. There are no read-only platform agents to delete locally — the full template gets pushed as-is.
 
+**Default model:** `claude-4.5-sonnet` (matches the platform default and the audience-agent convention). All `agent.yml` files in the analytics template should use `model: claude-4.5-sonnet, temperature: 0`.
+
 ## Template Repo
 
 ```
@@ -37,7 +39,7 @@ These values are passed into the shared patterns:
 Before starting any phase, ask the user: **"Is this a new analytics agent engagement, or are you resuming an existing one?"**
 
 - **New engagement:** start at Phase 1.
-- **Resume:** ask for the customer name, search Confluence for `Current Project State — <Customer>` (see `../shared/current_project_state.md`). Read it — its "Current phase" + "Next Action" fields say where to pick up.
+- **Resume:** ask for the customer name, search Confluence for `Current Project State - <Customer>` (see `../shared/current_project_state.md`). Read it — its "Current phase" + "Next Action" fields say where to pick up.
 
 Common phrases mapped to phases:
 
@@ -86,7 +88,7 @@ Read `../shared/current_project_state.md` for the State page setup — create it
 Read `../shared/requirements_doc_pattern.md` for the customer-shareable page workflow.
 
 Analytics-specific:
-- Page title: `Analytics Agent Requirements — <Customer>`
+- Page title: `Analytics Agent Requirements - <Customer>` (suffix is mandatory — Confluence enforces unique titles per space)
 - Body template: see `agent-setup/references/requirements_doc.md` (TODO — needs analytics-specific section list)
 
 ### Phase 4: Generate Test Cases (Round 1 — Empty Context)

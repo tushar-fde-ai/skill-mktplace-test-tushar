@@ -13,13 +13,17 @@ Customize and deploy a custom AI Foundry agent that analyzes CDP parent segment 
 When a parent segment is set up in TD, the platform auto-provisions an AI project named `TD-Managed: <Parent Segment Name>` containing 3 **read-only** TD-Managed agents. Those cannot be edited.
 
 To customize behavior, we **push a parallel set of agents into that same project**:
-- `Custom Audience Agent` (main, gpt-4.1)
-- `Clone Data Source Finder` (gpt-4.1 mirror)
-- `Clone Questions Suggester` (gpt-4.1 mirror)
+- `Custom Audience Agent` (main, claude-4.5-sonnet)
+- `Clone Data Source Finder` (claude-4.5-sonnet mirror)
+- `Clone Questions Suggester` (claude-4.5-sonnet mirror)
 - Custom knowledge bases (`business_context.md`, optionally `sql_templates.md`)
 - Chat integration that points at the Custom Audience Agent prompt
 
 The `TD-Managed: *` agent directories in the template repo are reference copies only — they must be deleted locally before push.
+
+**Note on the model default.** The template repo's `agent.yml` files currently ship with `model: gpt-4.1`. As of this skill, all customer engagements use `model: claude-4.5-sonnet` (matches the platform default and the TD-Managed agents). The Phase 2 file-edit checklist includes flipping the model field in the three Custom + Clone agent.yml files before push.
+
+The legacy `get_segment_draft_rules` knowledge base + tool was a gpt-only workaround. With Claude this is unnecessary — the schema description in the prompt is followed reliably. **Drop the KB and its tool reference from the template before push.** The Phase 2 instructions cover this.
 
 ## Template Repo
 
@@ -44,7 +48,7 @@ These values are passed into the shared patterns:
 Before starting any phase, ask the user: **"Is this a new audience agent engagement, or are you resuming an existing one?"**
 
 - **New engagement:** start at Phase 1.
-- **Resume:** ask for the customer name, search Confluence for `Current Project State — <Customer>` (see `../shared/current_project_state.md`). Read it — its "Current phase" + "Next Action" fields say where to pick up. If no State page exists, treat as new but skip already-done steps.
+- **Resume:** ask for the customer name, search Confluence for `Current Project State - <Customer>` (see `../shared/current_project_state.md`). Read it — its "Current phase" + "Next Action" fields say where to pick up. If no State page exists, treat as new but skip already-done steps.
 
 Common phrases mapped to phases (when a customer name is given):
 
@@ -61,7 +65,7 @@ When in doubt, **read Current Project State first** — it's authoritative.
 
 ## Workflow Sequence
 
-The flow is **push first, gather requirements second, test third, document last.** Push goes out with a placeholder `business_context.md`; Phase 5 fills it in once the customer responds. Round-1 test failures become explicit asks in the customer requirements doc.
+The flow is **push first, gather requirements second, test third, document last.** Phase 2 pushes with the shipped placeholder. Phase 4 generates a *schema-derived draft* of `business_context.md`, runs Round 1 tests against that, and surfaces business-specific gaps the customer needs to close. Phase 5 merges the customer's answers into the draft (customer wins on conflict; schema defaults fill gaps).
 
 This flow spans multiple sessions. Phase 3 ends with the customer being asked to fill out a Confluence page; the FDE engineer typically resumes in a later session at Phase 4 or 5.
 
@@ -95,20 +99,45 @@ Read `../shared/current_project_state.md` for the State page setup — create it
 Read `../shared/requirements_doc_pattern.md` for the customer-shareable page workflow.
 
 Audience-specific:
-- Page title: `Audience Agent Requirements — <Customer>`
+- Page title: `Audience Agent Requirements - <Customer>` (every Confluence page must be suffixed with the customer name — Confluence enforces unique titles per space)
 - Body template (the 9-section customer-fillable form): see `agent-setup/references/requirements_doc.md`
 
-### Phase 4: Generate Test Cases (Round 1 — Empty Context)
+### Phase 4: Generate Test Cases (Round 1 — Schema-Derived Draft Context)
 
 Read `../shared/test_cases_pattern.md` for the full test-case lifecycle (TC-IDs, Confluence page format, `tdx agent test`, `updateConfluencePage` mechanics).
 
 If resuming in a new session, **first read Current Project State**.
 
-Audience-specific:
-- Schema discovery skill: `tdx-skills:parent-segment-analysis`
-- 5 test categories: schema discovery, attribute queries, behavior aggregations, segment draft creation, ambiguous/guardrail
-- Optional 6th category if customer provides SQL templates in §9
-- Full category details + example prompts: `agent-setup/references/eval.md`
+**Round 1 runs against a schema-derived draft of `business_context.md`, not the empty placeholder.** This makes Round 1 a meaningful baseline — failures map to *business-specific* gaps (terms like "VIP", segment naming patterns) rather than "agent doesn't know any columns."
+
+Audience-specific Phase 4 sequence (overrides the generic shared flow):
+
+1. **Schema exploration** using `tdx-skills:parent-segment-analysis` — `tdx ps desc <parent_segment> -o`, sample data, list distinct values for low-cardinality columns.
+
+2. **Draft `business_context.md` from schema discovery.** Write a working draft covering only the schema-derivable fields:
+   - **Priority Attributes** — top ~10 columns from the `customers` table by likely usefulness for marketing/segmentation (monetary fields, dates, channel/source, status enums, demographic non-PII). Each gets an inferred 1-line description from the column name. If inference is uncertain, write `<TODO: confirm with customer>`.
+   - **Exclusion Rules → PII columns** — auto-flag columns matching common PII patterns (`email`, `phone`, `mobile`, `ssn`, `dob`, `birth`, `name`, `address`, `zip`, `postal`).
+   - All other sections (Business Model, Key Terms, Segment Naming Conventions, Customer filters, hidden behavior tables) — leave as empty placeholders. Phase 5 fills these from the customer's answers.
+   See `agent-setup/references/business_context_template.md` for the schema-derivable vs customer-required field split.
+
+3. **Confirmation gate.** Present the draft to the FDE engineer:
+   > Here's the schema-derived draft of `business_context.md`. Review the Priority Attributes (any wrong descriptions?) and Exclusion Rules → PII columns (any false positives or missed PII?). Confirm or edit before I push and run Round 1 tests.
+   
+   Wait for confirmation. Apply edits if any.
+
+4. **Push the draft KB:**
+   ```bash
+   tdx agent push -y
+   ```
+   The deployed agent now reads the schema-derived context for Round 1.
+
+5. **Generate, store, and run test cases** per `../shared/test_cases_pattern.md`:
+   - 5 test categories: schema discovery, attribute queries, behavior aggregations, segment draft creation, ambiguous/guardrail
+   - Optional 6th category if customer provides SQL templates in §9 of the requirements doc (Phase 5 only)
+   - Full category details + example prompts: `agent-setup/references/eval.md`
+   - Use the schema-derived attributes from Step 1-2 to write concrete test prompts (real column names, not placeholders)
+
+6. **Update Current Project State** at end of Phase 4: test cases page URL, Round 1 pass rate, failing TC-IDs, and a note that `business_context.md` was schema-derived and will merge with customer answers in Phase 5.
 
 ### Phase 5: Update Agent with Customer Requirements (Round 2)
 
@@ -118,7 +147,10 @@ Read `../shared/test_cases_pattern.md` for Round 2 + iteration loop. Read `agent
 
 Audience-specific updates:
 1. Read filled requirements doc via `getConfluencePage`.
-2. Update `knowledge_bases/business_context.md` from customer answers (see `agent-setup/references/business_context_template.md`).
+2. **Merge customer answers into the existing `business_context.md` draft** (see `agent-setup/references/business_context_template.md` "Phase 5 merge rule"). Section-by-section:
+   - **Empty customer field** → keep the schema-derived draft as-is.
+   - **Customer wrote something** → customer wins, replaces the draft section.
+   - **Customer added items the draft didn't have** (e.g., custom PII column) → append.
 3. If customer provided SQL templates in §9, create `knowledge_bases/sql_templates.md` (see `agent-setup/references/sql_templates_template.md`).
 4. Re-confirm pre-push state: `TD-Managed: *` directories absent locally, integration reference intact.
 5. `tdx agent push -y`.

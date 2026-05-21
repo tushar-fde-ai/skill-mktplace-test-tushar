@@ -21,7 +21,7 @@ Typical engagement: 10-15 cases. Solution-specific categories — see the callin
 | Round 1 | After Phase 2 push, while waiting for customer requirements doc. Empty/default knowledge bases. |
 | Round 2 | After Phase 5 re-push (customer requirements incorporated). |
 
-If resuming in a new session for either round, **first action is to read `Current Project State — <Customer>`** to recover the project name and prior URLs.
+If resuming in a new session for either round, **first action is to read `Current Project State - <Customer>`** to recover the project name and prior URLs.
 
 Skills to load:
 - `tdx-skills:agent-test` — for `tdx agent test` mechanics, `test.yml` format, output parsing
@@ -37,17 +37,17 @@ The calling SKILL provides the categories and example prompts. Generate 10-15 ca
 
 ## Step 2: Create the Confluence Test Cases Page
 
-Title: `<solution> Test Cases — <Customer>`
+Title: `<solution> Test Cases - <Customer>`
 
 ```
 createConfluencePage:
   cloudId: treasure-data.atlassian.net
   spaceId: 9797636
   parentId: <solution_folder_page_id>
-  title: "<solution> Test Cases — <Customer>"
+  title: "<solution> Test Cases - <Customer>"   # MUST be suffixed — Confluence enforces unique titles per space
   contentFormat: markdown
   body: |
-    # <solution> Test Cases — <Customer>
+    # <solution> Test Cases - <Customer>
 
     **Project:** <project name>
     **Round 1 run date:** <date>
@@ -95,7 +95,7 @@ Parse pass/fail from output. Then full-page-replace the Confluence test cases pa
 updateConfluencePage:
   cloudId: treasure-data.atlassian.net
   pageId: <test_cases_page_id>
-  title: "<solution> Test Cases — <Customer>"
+  title: "<solution> Test Cases - <Customer>"
   contentFormat: markdown
   body: <updated table with Round 1 Result column filled>
 ```

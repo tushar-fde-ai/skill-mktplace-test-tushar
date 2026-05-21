@@ -13,7 +13,7 @@ Reference library of generic patterns used by every solution under `general-skil
 | File | What it contains |
 |------|-----------------|
 | `confluence_folder_setup.md` | Discovery + creation of the customer's Confluence folder hierarchy (CUST → Region → Customer → FDE Solutions → solution folder) |
-| `current_project_state.md` | The cross-session context store concept — `Current Project State — <Customer>` Confluence page format and update rules |
+| `current_project_state.md` | The cross-session context store concept — `Current Project State - <Customer>` Confluence page format and update rules |
 | `push_pattern_td_managed.md` | Push pattern for solutions that customize an existing `TD-Managed: <Parent Segment>` project (e.g., custom-audience-agent) |
 | `push_pattern_fresh_project.md` | Push pattern for solutions that create a new LLM project from scratch (e.g., custom-analytics-agent) |
 | `requirements_doc_pattern.md` | Customer-fillable Confluence page workflow + share + pause-for-customer-response pattern |
@@ -32,7 +32,7 @@ Read `../shared/current_project_state.md` for the State page setup.
 Read `../shared/requirements_doc_pattern.md` for the customer-shareable page workflow.
 
 **Solution-specific overrides:**
-- Page title: `<solution> Requirements — <Customer>`
+- Page title: `<solution> Requirements - <Customer>`
 - Body template: see `agent-setup/references/requirements_doc.md`
 ```
 

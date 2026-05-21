@@ -16,9 +16,9 @@ Phase 6, after Round 2 testing passes.
 
 - Solution folder parentId (from `confluence_folder_setup.md`, recorded in Current Project State)
 - Pages already in the folder from earlier phases:
-  - `Current Project State — <Customer>`
-  - `<solution> Requirements — <Customer>`
-  - `<solution> Test Cases — <Customer>`
+  - `Current Project State - <Customer>`
+  - `<solution> Requirements - <Customer>`
+  - `<solution> Test Cases - <Customer>`
 
 If resuming in a new session, **first action: read `Current Project State`** via `searchConfluenceUsingCql` to recover the project name, folder parentId, and URLs of the requirements doc and test cases page.
 
@@ -34,9 +34,11 @@ parentId: <solution_folder_page_id>
 contentFormat: markdown
 ```
 
+**Page title convention:** every title below uses the format `<Base name> - <Customer>` (regular hyphen, single spaces, customer-name suffixed). Suffixing is mandatory — Confluence enforces unique titles per space.
+
 ### 1. Architecture
 
-Title: `<solution> Architecture — <Customer>`
+Title: `<solution> Architecture - <Customer>`
 
 Content (calling SKILL provides specifics):
 - Target project name (TD-Managed or fresh)
@@ -48,13 +50,13 @@ Content (calling SKILL provides specifics):
 
 ### 2. Customer-Specific Behavior Summary
 
-Title: `<solution> Behavior — <Customer>`
+Title: `<solution> Behavior - <Customer>`
 
 Plain-English narrative of what the agent knows for THIS customer. Pulled from the agent's knowledge base files. Solution-specific section list — see calling SKILL's `prod-docs/SKILL.md`. Keep it accessible to non-technical stakeholders; avoid YAML/JSON.
 
 ### 3. Eval Results
 
-Title: `<solution> Eval Results — <Customer>`
+Title: `<solution> Eval Results - <Customer>`
 
 Content:
 - Link to the test cases page
@@ -65,7 +67,7 @@ Content:
 
 ### 4. Runbook
 
-Title: `<solution> Runbook — <Customer>`
+Title: `<solution> Runbook - <Customer>`
 
 Content (calling SKILL provides specifics):
 - Re-deploy procedure (push pattern — TD-Managed or fresh)
@@ -75,7 +77,7 @@ Content (calling SKILL provides specifics):
 
 ### 5. Access & Ownership
 
-Title: `<solution> Access & Ownership — <Customer>`
+Title: `<solution> Access & Ownership - <Customer>`
 
 Content:
 - Agent owner (FDE team member)

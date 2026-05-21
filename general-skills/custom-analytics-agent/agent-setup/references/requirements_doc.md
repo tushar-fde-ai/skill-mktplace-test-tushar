@@ -6,14 +6,14 @@ This file holds the **analytics-specific content** for the customer-shareable re
 
 ## Page title
 
-`Analytics Agent Requirements — <Customer>`
+`Analytics Agent Requirements - <Customer>`
 
 ## Body template
 
 TODO: replace this placeholder with the actual customer-fillable form.
 
 ````markdown
-# Analytics Agent Requirements — <Customer>
+# Analytics Agent Requirements - <Customer>
 
 **Purpose:** Help us tailor the Custom Analytics Agent to your business.
 

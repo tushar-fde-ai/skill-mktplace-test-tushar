@@ -24,11 +24,12 @@ Follow `../../shared/push_pattern_fresh_project.md` end-to-end. Analytics-specif
 
 ### Files to edit
 
-TODO once template repo lands:
+TODO once template repo lands. Default model for any `agent.yml` files in the analytics template should be `model: claude-4.5-sonnet` (matches platform default).
 
 | File | Change |
 |------|--------|
 | `tdx.json` | `llm_project` → `<Customer> Analytics Agent` |
+| Each `*/agent.yml` in the template | Confirm `model: claude-4.5-sonnet`. If template ships with `gpt-4.1`, flip to Claude before push. |
 | TODO: knowledge base file path | TODO: leave empty for first push, Phase 5 fills it in |
 | TODO: integration config | TODO |
 | TODO: main agent prompt | TODO: optional tone tweaks |

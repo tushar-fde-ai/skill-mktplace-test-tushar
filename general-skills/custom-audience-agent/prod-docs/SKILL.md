@@ -16,9 +16,11 @@ The 5-page set, create order, and keep-current rules live in `../../shared/custo
 
 ## Page Content
 
+All Confluence page titles use the convention `<Base name> - <Customer>` (regular hyphen, customer-name suffixed) — Confluence enforces unique titles per space, so suffixing is mandatory.
+
 ### 1. Architecture
 
-Title: `Audience Agent Architecture — <Customer>`
+Title: `Audience Agent Architecture - <Customer>`
 
 Content:
 - Target project: `TD-Managed: <Parent Segment Name>`
@@ -27,19 +29,18 @@ Content:
   - `TD-Managed: Data Source Finder`
   - `TD-Managed: Questions Suggester`
 - **Custom agents pushed by FDE:**
-  - `Custom Audience Agent` (gpt-4.1, main orchestrator)
-  - `Clone Data Source Finder` (gpt-4.1 mirror)
-  - `Clone Questions Suggester` (gpt-4.1 mirror)
+  - `Custom Audience Agent` (claude-4.5-sonnet, main orchestrator)
+  - `Clone Data Source Finder` (claude-4.5-sonnet mirror)
+  - `Clone Questions Suggester` (claude-4.5-sonnet mirror)
 - **Custom knowledge bases pushed by FDE:**
-  - `business_context.md` — link to current version
-  - `get_segment_draft_rules.md` — shared schema (unchanged)
+  - `business_context.md` — schema-derived draft authored in Phase 4, merged with customer answers in Phase 5; link to current version
   - `sql_templates.md` *(only if customer provided in requirements §9)*
 - Chat integration: widget label + welcome message from `chat_parent_segment.yml`
-- Model + temperature defaults
+- Model: `claude-4.5-sonnet`, temperature: `0`
 
 ### 2. Customer-Specific Behavior Summary
 
-Title: `Audience Agent Behavior — <Customer>`
+Title: `Audience Agent Behavior - <Customer>`
 
 Plain-English narrative pulled from `business_context.md`. Sections:
 
@@ -55,10 +56,10 @@ Customer stakeholders read this to understand what their agent does. Plain Engli
 
 ### 3. Eval Results
 
-Title: `Audience Agent Eval Results — <Customer>`
+Title: `Audience Agent Eval Results - <Customer>`
 
 Content:
-- Link to `Audience Agent Test Cases — <Customer>` page
+- Link to `Audience Agent Test Cases - <Customer>` page
 - Round 2 final pass rate (X / N = Z%)
 - List of TC-IDs that still fail and why (known limitations)
 - Date of last `tdx agent test` run
@@ -66,7 +67,7 @@ Content:
 
 ### 4. Runbook
 
-Title: `Audience Agent Runbook — <Customer>`
+Title: `Audience Agent Runbook - <Customer>`
 
 Content:
 
@@ -94,7 +95,7 @@ Content:
 
 ### 5. Access & Ownership
 
-Title: `Audience Agent Access & Ownership — <Customer>`
+Title: `Audience Agent Access & Ownership - <Customer>`
 
 Content:
 - Agent owner (FDE team member)

@@ -1,33 +1,33 @@
 ---
 name: shared-current-project-state
 description: |
-  Cross-session context store concept for FDE engagements. Defines the "Current Project State — <Customer>" Confluence page format and the rule that every resumed session reads this page first. Used by every solution under general-skills/.
+  Cross-session context store concept for FDE engagements. Defines the "Current Project State - <Customer>" Confluence page format and the rule that every resumed session reads this page first. Used by every solution under general-skills/.
 ---
 
 # Shared: Current Project State
 
-FDE engagements span multiple sessions. The **Current Project State — <Customer>** Confluence page is the cross-session context store — a running summary of what's been done and the URLs of every artifact created.
+FDE engagements span multiple sessions. The **Current Project State - <Customer>** Confluence page is the cross-session context store — a running summary of what's been done and the URLs of every artifact created.
 
 ## Rules
 
 1. **Create early.** The Current Project State page is the *first* page created under the solution folder, before any customer-shareable docs.
 2. **Update at the end of every phase.** Phase completion, date, key URLs, key decisions, next action.
-3. **Read first on resume.** When starting a new session, the LLM's first action is `searchConfluenceUsingCql` for `Current Project State — <Customer>` (title match). The "Current phase" + "Next Action" fields determine where to pick up.
+3. **Read first on resume.** When starting a new session, the LLM's first action is `searchConfluenceUsingCql` for `Current Project State - <Customer>` (title match). The "Current phase" + "Next Action" fields determine where to pick up.
 4. **Authoritative.** When in doubt, the State page wins.
 
 ## Page Creation
 
-Title: `Current Project State — <Customer>`
+Title: `Current Project State - <Customer>` (suffix is mandatory — Confluence enforces unique titles per space)
 
 ```
 createConfluencePage:
   cloudId: treasure-data.atlassian.net
   spaceId: 9797636
   parentId: <solution_folder_page_id>
-  title: "Current Project State — <Customer>"
+  title: "Current Project State - <Customer>"   # MUST be suffixed — Confluence enforces unique titles per space
   contentFormat: markdown
   body: |
-    # Current Project State — <Customer>
+    # Current Project State - <Customer>
 
     Living context store. Update at the end of every phase. New sessions should `searchConfluenceUsingCql` for this page (title match) and read it first.
 
@@ -65,7 +65,7 @@ Use `updateConfluencePage` (full-page replace) at the end of each phase. Render 
 updateConfluencePage:
   cloudId: treasure-data.atlassian.net
   pageId: <state_page_id>
-  title: "Current Project State — <Customer>"
+  title: "Current Project State - <Customer>"
   contentFormat: markdown
   body: <fully re-rendered markdown>
 ```
