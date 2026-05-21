@@ -24,8 +24,10 @@
         "./ml-skills/mta/agent-skills/mta-journey-analysis",
         "./ml-skills/nba-scores",
         "./ml-skills/nba-scores/agent-skills/foundry-agent",
-        "./ml-skills/nba-scores/agent-skills/nba-insights",
-        "./ml-skills/nbp"
+        "./ml-skills/nba-scores/agent-skills/nba-scores-insights",
+        "./ml-skills/nbp",
+        "./ml-skills/nbp/agent-skills/foundry-agent",
+        "./ml-skills/nbp/agent-skills/nbp-insights",
       ]
     },
     {
@@ -34,9 +36,13 @@
       "source": "./",
       "strict": false,
       "skills": [
+        "./general-skills/agent-export",
         "./general-skills/custom-audience-agent",
         "./general-skills/custom-audience-agent/agent-setup",
-        "./general-skills/custom-audience-agent/prod-docs"
+        "./general-skills/custom-audience-agent/prod-docs",
+        "./general-skills/custom-analytics-agent",
+        "./general-skills/custom-analytics-agent/agent-setup",
+        "./general-skills/custom-analytics-agent/prod-docs"
       ]
     }
   ]
