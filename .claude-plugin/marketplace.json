@@ -27,7 +27,7 @@
         "./ml-skills/nba-scores/agent-skills/nba-scores-insights",
         "./ml-skills/nbp",
         "./ml-skills/nbp/agent-skills/foundry-agent",
-        "./ml-skills/nbp/agent-skills/nbp-insights",
+        "./ml-skills/nbp/agent-skills/nbp-insights"
       ]
     },
     {
