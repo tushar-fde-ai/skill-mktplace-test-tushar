@@ -15,7 +15,7 @@ globals:
   # Output database where results will be stored
   sink_database: gldn_marketing
 
-  # Model type - always 'custom' for PS code, 'automl' for PrecisionML
+  # Model type - 'custom' for PS quartile code, 'automl' for PrecisionML notebook
   model_type: 'custom'
 
   # Whether union activity table was pre-built
@@ -42,31 +42,31 @@ globals:
   # Table to store model configuration history
   model_config_table: 'datamodel_build_history'
 
-  # Number of bins for RFM score bucketing (1-10 scale)
+  # Number of bins for histogram display (NOT scoring scale — scoring always uses quartiles 1-4)
   num_bins: 10
 
-  ### Output Table Names ###
-  union_activity_table: rfm_combined_user_events
-  input_table: rfm_input_table
-  output_table: rfm_output_table
-  stats_table: rfm_stats
+### Output Table Names (TOP LEVEL — NOT nested under globals) ###
+union_activity_table: rfm_combined_user_events
+input_table: rfm_input_table
+output_table: rfm_output_table
+stats_table: rfm_stats
 
-############## TIME FILTER PARAMS ##########################
-  # Whether to apply time filtering to data
-  apply_time_filter: 'no'
+############## TIME FILTER PARAMS (TOP LEVEL) ##########################
+# Whether to apply time filtering to data
+apply_time_filter: 'no'
 
-  # 'range' for fixed start/end dates OR 'interval' for lookback period
-  time_filter_type: interval
+# 'range' for fixed start/end dates OR 'interval' for lookback period
+time_filter_type: interval
 
-  # Start date for TD_TIME_RANGE (format: YYYY-MM-DD)
-  time_range_start_date: 2022-01-01
+# Start date for TD_TIME_RANGE (format: YYYY-MM-DD)
+time_range_start_date: 2022-01-01
 
-  # End date - use '2222-22-22' for "always use latest available date"
-  time_range_end_date: 2222-22-22
+# End date - use '2222-22-22' for "always use latest available date"
+time_range_end_date: 2222-22-22
 
-  # Lookback period for TD_INTERVAL
-  # Examples: '-180d' (180 days), '-6M' (6 months), '-2w' (2 weeks)
-  lookback_period: '-180d'
+# Lookback period for TD_INTERVAL
+# Examples: '-180d' (180 days), '-6M' (6 months), '-2w' (2 weeks)
+lookback_period: '-180d'
 
 ############## UNION BEHAVIOR TABLES PARAMS ##########################
 ################ INPUT TABLE PARAMS ###################################
@@ -116,7 +116,7 @@ aggregate_metrics_tables:
 |-----------|------|-------------|----------------|
 | `canonical_id` | string | Column name for user identifier | `canonical_id`, `cdp_profile_id`, `user_id` |
 | `sink_database` | string | Database for output tables | `gldn_marketing`, `analytics_prod` |
-| `model_type` | string | Type of model to run | `custom` (PS code), `automl` (PrecisionML) |
+| `model_type` | string | Type of model to run | `custom` (PS quartile code), `automl` (PrecisionML notebook) |
 | `built_union_activity` | yes/no | Whether union table pre-exists | `yes`, `no` |
 | `archive_results` | yes/no | Archive previous run results | `yes`, `no` |
 | `store_historic_scores` | yes/no | Keep historical RFM scores | `yes`, `no` |
@@ -124,7 +124,7 @@ aggregate_metrics_tables:
 | `time_zone` | string | Timezone for operations | `UTC`, `America/New_York` |
 | `create_dashboard` | string | Create visualization dashboard | `yes`, `no` |
 | `api_endpoint` | string | TD API endpoint | `api.treasuredata.com`, `api-us.treasuredata.com` |
-| `num_bins` | integer | RFM score bins (1-10) | `10`, `5` |
+| `num_bins` | integer | Histogram display bins (NOT scoring scale — scoring uses quartiles 1-4) | `10`, `5` |
 
 ### Time Filter Parameters
 
@@ -191,7 +191,7 @@ custom_filter: "page_type IN ('product', 'category', 'checkout')"
 
 ## Output Table Names
 
-Configure where RFM results will be stored:
+Configure where RFM results will be stored. These are **top-level** YAML keys, NOT nested under `globals:`:
 
 ```yaml
 # Combined activity from all source tables
@@ -200,12 +200,18 @@ union_activity_table: rfm_combined_user_events
 # Preprocessed input features
 input_table: rfm_input_table
 
-# Final RFM scores and segments
+# Final RFM quartile scores and segments
 output_table: rfm_output_table
 
-# Statistical summary and distributions
+# Statistical summary per segment (also generates _histogram, _model_params, _global_session_filter, _daily_agg)
 stats_table: rfm_stats
 ```
+
+The workflow also creates these derived stats tables:
+- `${stats_table}_histogram` — histogram bins per metric per segment
+- `${stats_table}_model_params` — per-source run metadata
+- `${stats_table}_global_session_filter` — session ranking
+- `${stats_table}_daily_agg` — historical score aggregation (when `store_historic_scores: yes`)
 
 ## Time Filter Modes
 

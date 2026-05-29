@@ -19,6 +19,8 @@
         "./ml-skills/rfm/workflow-setup",
         "./ml-skills/rfm/agent-skills",
         "./ml-skills/rfm/agent-skills/foundry-agent",
+        "./ml-skills/rfm/agent-skills/rfm-analysis",
+        "./ml-skills/rfm/prod-docs",
         "./ml-skills/mta",
         "./ml-skills/mta/agent-skills/foundry-agent",
         "./ml-skills/mta/agent-skills/mta-journey-analysis",
