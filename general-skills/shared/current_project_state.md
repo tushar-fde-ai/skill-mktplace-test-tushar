@@ -74,8 +74,8 @@ updateConfluencePage:
 
 | Phase complete | Update fields |
 |---|---|
+| Phase 1d (requirements doc published) | Current phase → 2, Requirements doc URL, customer notification date in Key Decisions |
 | Phase 2 push | Current phase → 3, project name + push date in Key Decisions |
-| Phase 3 requirements doc | Current phase → 4 (or 5 if waiting), Requirements doc URL, customer notification date |
-| Phase 4 Round 1 tests | Current phase → 5 (waiting), Test cases page URL, Round 1 pass rate, failing TC-IDs |
-| Phase 5 Round 2 tests | Current phase → 6, Round 2 pass rate, remaining limitations |
-| Phase 6 docs | Current phase → "complete — engagement live", all 5 doc URLs populated |
+| Phase 3 Round 1 tests | Current phase → 4 (waiting on customer), Test cases page URL, Round 1 pass rate, failing TC-IDs |
+| Phase 4 Round 2 tests | Current phase → 5, Round 2 pass rate, remaining limitations |
+| Phase 5 docs | Current phase → "complete — engagement live", all 5 doc URLs populated |

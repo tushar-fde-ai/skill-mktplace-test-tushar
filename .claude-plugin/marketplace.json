@@ -39,6 +39,7 @@
       "skills": [
         "./general-skills/shared",
         "./general-skills/agent-export",
+        "./general-skills/shared",
         "./general-skills/custom-audience-agent",
         "./general-skills/custom-audience-agent/agent-setup",
         "./general-skills/custom-audience-agent/prod-docs",

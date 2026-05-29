@@ -1,16 +1,16 @@
 ---
 name: custom-audience-agent-prod-docs
 description: |
-  Audience-specific content for the Phase 6 customer-specific Confluence documentation page set. The 5-page structure + create order + keep-current rules live in ../../shared/customer_docs_pattern.md; this file specifies what goes in each page for an audience-agent engagement.
+  Audience-specific content for the Phase 5 customer-specific Confluence documentation page set. The 5-page structure + create order + keep-current rules live in ../../shared/customer_docs_pattern.md; this file specifies what goes in each page for an audience-agent engagement.
 ---
 
-# Custom Audience Agent — Phase 6 Page Content
+# Custom Audience Agent — Phase 5 Page Content
 
 The 5-page set, create order, and keep-current rules live in `../../shared/customer_docs_pattern.md`. This file specifies the **audience-specific content** for each page.
 
 ## Prerequisites
 
-- All Phase 5 (Round 2 testing) work complete
+- All Phase 4 (Round 2 testing) work complete
 - Current Project State page contains: solution folder ID, project name, requirements doc URL, test cases page URL
 - Local `knowledge_bases/business_context.md` (and optionally `sql_templates.md`) reflects the customer's final state — `Read` these before authoring the Behavior page
 
@@ -33,7 +33,7 @@ Content:
   - `Clone Data Source Finder` (claude-4.5-sonnet mirror)
   - `Clone Questions Suggester` (claude-4.5-sonnet mirror)
 - **Custom knowledge bases pushed by FDE:**
-  - `business_context.md` — schema-derived draft authored in Phase 4, merged with customer answers in Phase 5; link to current version
+  - `business_context.md` — schema-derived draft authored in Phase 3, merged with customer answers in Phase 4; link to current version
   - `sql_templates.md` *(only if customer provided in requirements §9)*
 - Chat integration: widget label + welcome message from `chat_parent_segment.yml`
 - Model: `claude-4.5-sonnet`, temperature: `0`

@@ -28,7 +28,13 @@ If provided, read with `getConfluencePage` and skip ahead to Phase 5 (use existi
 
 The calling SKILL provides:
 - The page title (e.g., `Audience Agent Requirements - <Customer>`, `Analytics Agent Requirements - <Customer>`)
-- The body template (the actual customer-fillable questions — solution-specific)
+- The body template (the actual customer-facing content — solution-specific)
+
+The body template may be:
+- **A blank form** — sections with `> _Your answer:_` placeholders, customer fills from scratch.
+- **A pre-filled draft** — sections with `> _Your answer:_` followed by inferences derived from earlier exploration. The audience-agent body is pre-filled from the Phase 1 schema-exploration inference bundle, with each pre-filled answer tagged either `[INFERRED — please confirm]` (we made a confident guess) or `[NEEDS YOUR INPUT]` (we couldn't infer). The customer reviews / edits / extends.
+
+The pre-filled approach is preferred when the calling SKILL has access to schema or other discovery data that makes meaningful first-draft answers possible. Customers respond faster to a draft they can edit than to a blank form they have to author from scratch. Canonical reference example: [Audience Agent Requirements - Test Customer Retail](https://treasure-data.atlassian.net/wiki/spaces/CUST/pages/4981719206/).
 
 Create:
 
@@ -42,12 +48,10 @@ createConfluencePage:
   body: <calling-SKILL-provided body template>
 ```
 
-The body template is **solution-specific** — see the calling SKILL's `agent-setup/references/requirements_doc.md` for the actual sections. The body should be phrased for the customer to fill in directly (use `> _Your answer:_` placeholders, etc.).
-
 Body templates should typically include:
-- A short purpose statement
+- A short purpose statement (note that pre-filled bodies should explicitly say *"Answers below were drafted from <source> — please review, correct, or expand"* so the customer doesn't think they're seeing leaked input from another customer)
 - A target return date placeholder
-- N solution-specific sections, each with example answers
+- N solution-specific sections, each with example answers or pre-filled inferences
 - A close-out instruction telling the customer how to notify the FDE engineer when done
 
 ## Step 3: Hand Off to FDE Engineer

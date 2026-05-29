@@ -3,20 +3,23 @@
 This file holds the **audience-specific content** for the test case lifecycle. The generic two-round flow + Confluence page format + `tdx agent test` mechanics live in `../../../shared/test_cases_pattern.md`.
 
 **Round 1 vs Round 2 context:**
-- **Round 1** runs against the *schema-derived draft* of `business_context.md` (Phase 4 Step 2 in the parent SKILL — Priority Attributes + PII exclusions auto-populated from `tdx ps desc -o`). The agent knows real columns; failures should skew toward business-specific gaps (terms like "VIP", segment naming, business rules) rather than schema ignorance.
-- **Round 2** runs after the customer's filled requirements doc has been merged into `business_context.md` (Phase 5).
+- **Round 1** runs against `business_context.md` populated from the **Phase 1 inference bundle** (deep schema exploration: distributions, samples, existing segments). The agent has a rich, customer-typical first-draft context — failures should be narrow: true business-context gaps the schema couldn't infer (specific business rules, jargon the schema doesn't reveal) or edge cases.
+- **Round 2** runs after the customer's edited requirements doc has been merged into `business_context.md` (Phase 4).
+
+**Both rounds are gated** — the LLM never auto-runs `tdx agent test`. Phase 3 Step 5 and Phase 4 Step 6 each have a confirmation gate: present the test cases (Phase 3) or the merged-and-pushed KB (Phase 4), then wait for the FDE engineer's explicit "run" before executing `tdx agent test`.
 
 ## Skills to Load
 
 - `tdx-skills:agent-test` — for `tdx agent test` mechanics, `test.yml` format, output parsing
-- `tdx-skills:parent-segment-analysis` — for schema discovery (Phase 4 Step 1)
+- `tdx-skills:parent-segment-analysis` — for schema discovery (Phase 1b)
+- `segment` (Treasure Work skill) — for `tdx sg list` to enumerate existing segments + folder structure (Phase 1b)
 
 ## Test Case Categories
 
 Generate 10-15 cases total, mixing complexity (simple / medium / complex) across these 5 (or 6) categories.
 
 ### 1. Schema Discovery (2-3 cases)
-Confirms the agent uses `data_source_finder` and reports data quality. With the Phase 4 schema-derived draft loaded, the agent should *succeed* here in Round 1 (not just attempt).
+Confirms the agent uses `data_source_finder` and reports data quality. With the Phase 3 schema-derived draft loaded, the agent should *succeed* here in Round 1 (not just attempt).
 
 - "What customer attributes are available?"
 - "Show me an overview of the parent segment."
@@ -45,8 +48,9 @@ Exercises the `:segment:` output.
 
 - "Create a segment of customers who [attribute condition] AND [behavior condition]."
 - "Create a segment that combines [existing_segment_name] but excludes [condition]."
+- "Create a segment of customers who [behavior] in the last 30 days." — verifies the agent uses the schema-correct time operator, not a Unix timestamp.
 
-Pass criteria: produces valid JSON matching the `:segment:` output schema, acknowledges segment size before drafting, reuses `baseSegmentIds` for named-segment references.
+Pass criteria: produces valid JSON matching the `:segment:` output schema, acknowledges segment size before drafting, reuses `baseSegmentIds` for named-segment references. **For any time-based condition: uses `TIME WITHIN PAST` with `{value, unit}` (day/week/month/year) or `BETWEEN` with an ISO 8601 date in `min_value`/`max_value`. The JSON must NOT contain a Unix epoch number anywhere.**
 
 ### 5. Ambiguous / Guardrail (2-3 cases)
 Confirms the agent asks for clarification or refuses appropriately.
@@ -88,6 +92,13 @@ Pass criteria: agent references the template by name, adapts the SQL to the ques
     - The agent reports the estimated segment size before drafting
     - The final segment JSON includes a behavioral condition (purchases) and an attribute condition (VIP indicator)
     - The JSON is valid against the `:segment:` output schema
+
+# TC-005 (time-operator guardrail)
+- user_input: "Create a segment of customers who placed an order in the last 30 days."
+  criteria:
+    - The final segment JSON uses operator `TIME WITHIN PAST` with `right_value` of `{value: 30, unit: "day"}` OR `BETWEEN` with ISO 8601 date timestamps
+    - The JSON does NOT contain any Unix epoch number (e.g., 1700000000)
+    - The JSON does NOT use a `<` or `>` operator with a numeric epoch as `right_value`
 ```
 
 Multi-round (Discovery → Execution) test for complex cases:
@@ -116,11 +127,16 @@ When a test case still fails after Round 1 → customer requirements → Round 2
 | Agent tone is off, skips Discovery Stage step, drafts segments without sizing first | `Custom Audience Agent/prompt.md` |
 | Agent calls wrong sub-tool or fails schema lookup | Inspect `Clone Data Source Finder` / `Clone Questions Suggester` prompts (rare) |
 
-After each fix, re-push and re-test:
+After each fix, re-push and **gate before retest**:
 
 ```bash
 tdx agent push -y
+```
+
+Then ask the FDE engineer: *"Re-pushed with fix for TC-XXX. Reply 'run' when you're ready for me to re-execute `tdx agent test`."* Wait for approval before:
+
+```bash
 tdx agent test
 ```
 
-Update Round 2 column on the test cases Confluence page (full-page replace via `updateConfluencePage`). Stop when pass rate is acceptable. Document remaining failures as known limitations on the Phase 6 Eval Results page.
+Update Round 2 column on the test cases Confluence page (full-page replace via `updateConfluencePage`). Stop when pass rate is acceptable. Document remaining failures as known limitations on the Phase 5 Eval Results page.

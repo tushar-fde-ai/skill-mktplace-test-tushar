@@ -18,8 +18,10 @@ Typical engagement: 10-15 cases. Solution-specific categories — see the callin
 
 | Round | When |
 |---|---|
-| Round 1 | After Phase 2 push, while waiting for customer requirements doc. Empty/default knowledge bases. |
-| Round 2 | After Phase 5 re-push (customer requirements incorporated). |
+| Round 1 | After the calling SKILL has populated `business_context.md` (or equivalent KB) with whatever pre-customer-input data it can — e.g., audience-agent runs Round 1 against a Phase 1 inference bundle. Calling SKILL determines whether the KB is empty, partially populated, or richly pre-filled. |
+| Round 2 | After the customer's edits to the requirements doc have been merged into the KB and re-pushed. |
+
+**Both rounds are gated** — the LLM never auto-runs `tdx agent test`. Each round has a confirmation gate where the FDE engineer reviews and replies "run" before execution. See Step 4 (Round 1) and Step 5 (Round 2) below.
 
 If resuming in a new session for either round, **first action is to read `Current Project State - <Customer>`** to recover the project name and prior URLs.
 
@@ -82,7 +84,13 @@ Place at the project root (same level as `tdx.json`). Annotate each entry with i
 
 Multi-round (Discovery → Execution) tests use the `rounds:` syntax — see `tdx-skills:agent-test`.
 
-## Step 4: Run Round 1
+## Step 4: Run Round 1 (gated)
+
+**Do not auto-run `tdx agent test`.** Present the generated test cases to the FDE engineer and wait for explicit approval:
+
+> Here are the N test cases I've generated. Review them at the Confluence page: <URL>. Reply 'run' when you're ready for me to execute `tdx agent test`.
+
+After explicit approval:
 
 ```bash
 cd agents/<project-dir>
@@ -104,13 +112,17 @@ updateConfluencePage:
 
 Update **Current Project State**: test cases page URL, Round 1 pass rate, failing TC-IDs.
 
-**Many failures are expected in Round 1** — that's the point. Cases that fail because the agent doesn't know customer-specific terms or business rules are signals for the requirements doc.
+**Round 1 expectations depend on the calling SKILL.** If the SKILL writes a thoroughly pre-populated `business_context.md` (or equivalent KB) before Round 1 — like the audience-agent's Phase 1 inference bundle — failures should be narrow (true business gaps, edge cases). If the SKILL leaves the KB empty for Round 1, expect broader failures that customer answers will close.
 
 When updating the requirements doc Confluence page, link the customer to specific failing TC-IDs to make the request concrete: *"TC-004 fails because the agent doesn't know what 'X' means. Please define it in §<section>."*
 
-## Step 5: Run Round 2
+## Step 5: Run Round 2 (gated)
 
-After Phase 5 (knowledge bases updated, re-push):
+After Phase 5 (knowledge bases updated, re-push), again **do not auto-run.** Ask:
+
+> `business_context.md` updated with customer edits and pushed. Reply 'run' when you're ready for me to execute `tdx agent test` for Round 2.
+
+After explicit approval:
 
 ```bash
 tdx agent test
