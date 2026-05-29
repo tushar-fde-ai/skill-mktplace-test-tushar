@@ -90,7 +90,7 @@ Each entry below becomes one source feeding the unioned activity table. Add as m
 | `custom_filter` | string | SQL WHERE clause |
 | `conversion_flag` | float/SQL | `0.0` for touchpoints, `1.0` for conversion sources, or a SQL expression like `IF(REGEXP_LIKE(lower(td_path), 'thank|download'), 1.0, 0.0)` |
 | `item_price` | float/string | `0.0` for non-monetary sources, or a column name like `unit_price` for the conversion source |
-| `apply_time_filter` | bool | Whether the global time filter is applied to this source |
+| `apply_time_filter` | bool | Whether the global time filter is applied to this source. Set `true` for all sources when a time window is configured (range or interval); leave `false` to use all historical data (template default). |
 | `query_type` | string | Blank to use the YAML-driven SQL; `'custom'` to read from `sql/src_tables/<name>.sql` |
 
 > **Important:** Inside YAML strings, single quotes are doubled (`''…''`) because the SQL is later interpolated into another SQL template. Match the template exactly when in doubt.

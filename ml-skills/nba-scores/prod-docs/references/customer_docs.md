@@ -1,160 +1,74 @@
-# Phase 1: Information Gathering
+# NBA Engagement Scores — Customer-Facing Documentation
 
-Collect all information needed to generate the customer-facing documentation for MTA Model.
+**Confluence folder setup** (locating the customer folder, creating FDE Solutions and NBA sub-folders) is handled by `../../../shared/confluence_folder_setup.md`. Pass `solution-folder-name: NBA Engagement Scores` and title variants: `NBA Engagement Scores`, `Next Best Action`, `NBA`, `Engagement Scores`.
 
-## Step 1: Locate the Customer's Confluence Folder
+**Phase 6 documentation page set** (5 standard Confluence pages, create order, keep-current rules) is handled by `../../../shared/customer_docs_pattern.md`.
 
-The customer documentation lives in the **Customers** Confluence space (CUST), organized by region:
+---
 
-```
-Customers (CUST, space ID: 9797636)
-├── US/ROWs    (page ID: 44728439)    → customer folders alphabetically
-├── Japan      (page ID: 643963288)   → customer folders
-└── Korea      (page ID: 1824266587)  → customer folders
-```
+## NBA-Specific Page Content
 
-Ask the user to identify the customer's Confluence folder using **one of two methods**:
+The sections below provide the NBA-specific content for each of the 5 Phase 6 pages. Read alongside `../../../shared/customer_docs_pattern.md` which defines the page titles, create order, and update rules.
 
-### Method A: Search by Customer Name (Preferred)
+### 1. Architecture
 
-Ask: **What is the customer name?**
+Title: `NBA Engagement Scores Architecture - <Customer>`
 
-Then search for their folder in the CUST space:
+Content to include:
+- TD Workflow project name (default: `nba_eng_prod`, or customer-specific name if overridden)
+- GitHub repo: `https://github.com/treasure-data-ps/nba_eng_scores`
+- Workflow entry point: `nba_eng_launch.dig`
+- Config file: `td_wf/config/input_params.yml`
+- Companion Foundry agent project name (default: `NBA Engagement Scores`)
+- Scoring strategy deployed (`percentile` / `quartile` / `minmax`)
+- Source tables configured (list each `src_table` entry)
+- Output table joined to Parent Segment: `nba_combined_metrics_final`
+- Dashboard: whether TI dashboard was deployed (`create_dashboard: yes/no`)
 
-```
-searchConfluenceUsingCql:
-  cloudId: treasure-data.atlassian.net
-  cql: space = "CUST" AND type = page AND title ~ "<customer_name>"
-  limit: 10
-```
+### 2. Behavior Summary
 
-From the results, identify the correct page by checking:
-1. The page title matches or closely matches the customer name
-2. The page's `parentId` is one of the three region pages (`44728439`, `643963288`, `1824266587`) — confirming it's a top-level customer folder, not a deeply nested subpage
+Title: `NBA Engagement Scores Behavior - <Customer>`
 
-If multiple matches are found, show them to the user and ask which one is correct.
-If no matches are found, ask the user to provide a direct link (Method B).
+Plain-English narrative for non-technical stakeholders. Before authoring, read `../../../shared/customer_docs_pattern.md` guidance on keeping this accessible.
 
-### Method B: User Provides a Page URL or ID
+Cover:
+- What data sources feed the model and the lookback window used
+- How Next Best Channel scores are derived (UTM parsing + channel regex)
+- How Next Best Time scores are derived (daypart buckets and the customer's chosen boundaries)
+- How Cart Abandon is defined for this customer (lookback window, add-to-cart event name)
+- How New Visitor is defined (max age, max page visits, paid-traffic exclusions)
+- How scores are activated — which Parent Segment the output is joined to, and example child segment use cases
 
-Ask: **Can you paste a link to any page in the customer's Confluence folder?**
+### 3. Eval Results
 
-Extract the page ID from the URL. Confluence URLs look like:
-- `https://treasure-data.atlassian.net/wiki/spaces/CUST/pages/<pageId>/Page+Title`
-- `https://treasure-data.atlassian.net/wiki/x/<tinyId>` (tiny link — pass the `tinyId` to `getConfluencePage` as the `pageId`)
+Title: `NBA Engagement Scores Eval Results - <Customer>`
 
-Once you have the page ID, read the page to get its `parentId`. If the page itself is the customer folder (i.e., its parent is a region page), use its ID. Otherwise, walk up the tree until you find the customer-level folder.
+Content (per `../../../shared/customer_docs_pattern.md`):
+- Link to the workflow validation results (output table row counts, score distribution checks from `workflow-setup/references/eval.md`)
+- Profile count in `nba_combined_metrics_final` vs Parent Segment profile count
+- Cart abandon flag rate and new visitor flag rate
+- Channel score null rate (flag if >70% null — indicates low UTM coverage)
+- Date of last successful workflow run
+- Any known limitations (e.g., low UTM coverage limiting channel scoring quality)
 
-### Step 1b: Locate or Create the FDE Solutions Sub-Folder
+### 4. Runbook
 
-Documentation pages should live under an **FDE Solutions** sub-folder within the customer folder — not directly under the customer root.
+Title: `NBA Engagement Scores Runbook - <Customer>`
 
-**Search for an existing sub-folder**:
+Point to `runbook.md` in this same folder for the full operational reference. This Confluence page should surface:
+- Re-deploy procedure: update `input_params.yml` → `tdx wf push -y` → `tdx wf run nba_eng_prod.nba_eng_launch`
+- Re-run validation SQL (from `runbook.md` Validate Output section)
+- Common failure modes table (from `runbook.md`)
+- Workflow schedule (cron expression and timezone)
+- Secret key location: `tdx wf secrets --project nba_eng_prod`
 
-Get the direct children of the customer folder and look for a match:
+### 5. Access & Ownership
 
-```
-getConfluencePageDescendants:
-  cloudId: treasure-data.atlassian.net
-  pageId: <customer_folder_page_id>
-  depth: 1
-  limit: 50
-```
+Title: `NBA Engagement Scores Access & Ownership - <Customer>`
 
-Scan the results for a page whose title matches any of these patterns (case-insensitive):
-- `FDE Solutions`
-- `ML & Analytics Solutions`
-- `ML & Analytics Projects`
-- `ML Solutions`
-- `ML Projects`
-- `Analytics Solutions`
-- `Analytics Projects`
-- `FDE`
-
-Also match titles that include the customer name as a suffix (e.g., `ML & Analytics Projects - SCI`).
-
-If a match is found, use that page's ID.
-
-**If no match is found**, create the sub-folder:
-
-```
-createConfluencePage:
-  cloudId: treasure-data.atlassian.net
-  spaceId: 9797636
-  parentId: <customer_folder_page_id>
-  title: "FDE Solutions"
-  contentFormat: markdown
-  body: "Landing page for Forward Deployed Engineering solutions deployed for this customer."
-```
-
-### Step 1c: Locate or Create the MTA Sub-Folder
-
-Within the ML/FDE sub-folder, create (or find) a folder specific to the MTA project.
-
-**Search for an existing MTA folder**:
-
-Get the direct children of the ML/FDE sub-folder:
-
-```
-getConfluencePageDescendants:
-  cloudId: treasure-data.atlassian.net
-  pageId: <ml_fde_folder_page_id>
-  depth: 1
-  limit: 50
-```
-
-Scan the results for a page whose title matches any of these patterns (case-insensitive):
-- `Journey Analysis`
-- `MTA`
-- `Multi-Touch Attribution`
-- `MTA Journey Analytics`
-
-If a match is found, use that page's ID.
-
-**If no match is found**, create the sub-folder:
-
-```
-createConfluencePage:
-  cloudId: treasure-data.atlassian.net
-  spaceId: 9797636
-  parentId: <ml_fde_folder_page_id>
-  title: "MTA Journey Analytics"
-  contentFormat: markdown
-  body: "Multi-Touch Attribution journey analytics workflow documentation for this customer."
-```
-
-### Store the Folder IDs
-
-Save both:
-- **ML/FDE sub-folder page ID**
-- **MTA sub-folder page ID** — you'll use this as the `parentId` when creating documentation pages in Phase 5
-
-The final page hierarchy will be:
-```
-[Customer Folder]
-└── FDE Solutions (or ML & Analytics Projects, etc.)
-    └── MTA Journey Analytics          ← parentId for Phase 5
-        ├── MTA Configuration Summary
-        ├── MTA Architecture & Output Schema
-        └── MTA Runbook & Maintenance
-```
-
-## Step 2: Check for Existing MTA Doc
-
-Ask the user:
-
-> Do you have an existing filled-out customer-facing handoff docs? If yes, paste the Confluence link.
-
-If provided, read the page content using `getConfluencePage` and extract whatever configuration details are available (database, tables, columns, conversion definition, etc.). Use the extracted values to pre-fill later steps, but still validate everything through auto-discovery.
-
-The standard MTA requirements template lives at:
-`https://treasure-data.atlassian.net/wiki/spaces/PS/pages/2684977527/MTA+Model+-+Requirements+Gathering+Template`
-
-## Step 3: Initial Questions
-
-Collect answers to these questions before exploring any data. These determine the information you will use in your hand-off.
-
-### 3a: Data Information
-
-Ask: **What is the name of the database where the mta tables live?**
-
+Content (standard across all solutions — per `../../../shared/customer_docs_pattern.md`):
+- FDE engineer owner
+- Customer stakeholders with TD access
+- Slack channel for support/questions
+- GitHub repo location for the workflow config
+- Escalation path for platform-level issues

@@ -157,6 +157,8 @@ Each table in `aggregate_metrics_tables` has a consistent column shape regardles
 
 **Reference**: `references/table_configuration.md` has the full per-source-type guidance with discovery SQL, configuration templates, and key decisions.
 
+> **`apply_time_filter` rule:** If the customer selected a time window in requirements question 1f (range or interval), set `apply_time_filter: true` on **every** source table entry. If they chose "use all historical data", leave it `false` (template default).
+
 Quick summary:
 
 #### Pageviews (web touchpoints + conversion patterns)
