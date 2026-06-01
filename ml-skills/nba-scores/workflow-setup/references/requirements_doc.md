@@ -19,9 +19,9 @@ Walk through the questions below before exploring any data. Together they determ
 
 ### 1a: Data Readiness
 
-Ask: **Has the customer's data gone through ID Unification? Do they have a `gldn` database with enriched/unified tables?**
+Ask: **Has the customer's data gone through ID Unification? What is the name of the database with the final enriched/unified tables?**
 
-- If **yes**: `unique_user_id` will likely be `canonical_id` and source tables will be in a `gldn_*` database.
+- If **yes**: `unique_user_id` will likely be `canonical_id` , but you should verify by exploring the data in the enriched/unified tables in DB provided by user.
 - If **no**: ask **Is there a unique identifier that can be used as the main `customer_id` across all tables?** (e.g., `cdp_profile_id`, `user_id`, `email_hash`). That becomes `unique_user_id` in the config.
 
 ### 1b: Parent Segment & Activation
@@ -185,7 +185,8 @@ NBA Engagement Scores — Requirements Summary
 =============================================
 
 Customer: [name]
-Database: [database_name]
+Input Tables Database: [input_database_name]
+Output Tables Database: [output_database_name]
 Profile ID column: [unique_user_id]
 Parent Segment for activation: [segment_name]
 Confluence folder: [page URL]
