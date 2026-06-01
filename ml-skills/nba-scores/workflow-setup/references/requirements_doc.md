@@ -24,13 +24,26 @@ Ask: **Has the customer's data gone through ID Unification? What is the name of 
 - If **yes**: `unique_user_id` will likely be `canonical_id` , but you should verify by exploring the data in the enriched/unified tables in DB provided by user.
 - If **no**: ask **Is there a unique identifier that can be used as the main `customer_id` across all tables?** (e.g., `cdp_profile_id`, `user_id`, `email_hash`). That becomes `unique_user_id` in the config.
 
-### 1b: Parent Segment & Activation
+### 1b: Output Database
+
+Ask: **What database should all NBA output tables be written to? (`sink_database` in `input_params.yml`)** Present 'td_agents' as default option the user can select.
+
+> ⚠️ **This is almost always different from the source tables database.** The source database holds raw/enriched behavioral data (read-only). The sink database is where the workflow writes `nba_combined_metrics_final`, `nba_dash_*`, and all temp tables. Using the wrong database here causes either permission errors or pollution of the source database.
+
+Common patterns:
+- A dedicated output/analytics DB: `td_agents`, `nba_output`, `analytics_prod`
+- A customer-specific working DB: `<customer>_ml_output`, `<customer>_analytics`
+- Sometimes the same as source (only when the customer explicitly confirms write access and accepts co-location)
+
+This sets `sink_database`. **Always ask explicitly — never assume it matches the source database.**
+
+### 1c: Parent Segment & Activation  ← (renumbered from 1b)
 
 Ask: **What is the name of the Parent Segment that will be used for Audience building and Activation, where the NBA recommendations need to be added as attributes?**
 
 This is critical for the deployment phase — the `nba_combined_metrics_final` table will be added as an attribute of this Parent Segment so the scores become filterable in Audience Studio.
 
-### 1c: Use-Case Scope
+### 1d: Use-Case Scope
 
 Ask: **Please describe the high-level use cases this model will be used for and who the end users will be.**
 
