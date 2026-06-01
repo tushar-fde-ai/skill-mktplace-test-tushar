@@ -22,10 +22,10 @@ FROM ${sink_database}.nba_combined_metrics_final;
 -- Confirm expected score columns exist and are non-null
 SELECT
   COUNT(*) AS total,
-  COUNT(CASE WHEN channel IS NOT NULL THEN 1 END) AS has_channel,
-  COUNT(CASE WHEN activity_period IS NOT NULL THEN 1 END) AS has_activity_period,
-  COUNT(CASE WHEN cart_abandon IS NOT NULL THEN 1 END) AS has_cart_abandon,
-  COUNT(CASE WHEN new_visitor IS NOT NULL THEN 1 END) AS has_new_visitor
+  COUNT(CASE WHEN next_best_channel IS NOT NULL THEN 1 END) AS has_channel,
+  COUNT(CASE WHEN next_best_time IS NOT NULL THEN 1 END) AS has_activity_period,
+  COUNT(CASE WHEN cart_abandon_flag IS NOT NULL THEN 1 END) AS has_cart_abandon,
+  COUNT(CASE WHEN new_visitor_flag IS NOT NULL THEN 1 END) AS has_new_visitor
 FROM ${sink_database}.nba_combined_metrics_final;
 ```
 
@@ -33,7 +33,7 @@ FROM ${sink_database}.nba_combined_metrics_final;
 
 ```sql
 -- Score distribution sanity check (quartile strategy → expect 4 distinct values per score)
-SELECT channel, COUNT(*) AS cnt
+SELECT next_best_channel, COUNT(*) AS cnt
 FROM ${sink_database}.nba_combined_metrics_final
 GROUP BY 1 ORDER BY 2 DESC LIMIT 20;
 ```
@@ -50,13 +50,11 @@ GROUP BY 1 ORDER BY 2 DESC LIMIT 20;
 SELECT MAX(session_id) AS latest_session FROM ${sink_database}.nba_dash_model_metrics;
 ```
 
-Then use that `session_id`:
-
 ```sql
-SELECT *
+SELECT metric_name, metric_value, profile_count, converted_users
 FROM ${sink_database}.nba_dash_stats_summary
-WHERE session_id = <latest_session_id>
-ORDER BY metric_name
+WHERE session_id = (SELECT MAX(session_id) FROM ${sink_database}.nba_dash_model_metrics)
+ORDER BY metric_name, profile_count DESC
 LIMIT 50;
 ```
 
@@ -69,20 +67,25 @@ LIMIT 50;
 
 ## 3. Dashboard Table — `nba_dash_model_metrics`
 
-**What it is:** One row per workflow run — run metadata, profile counts, conversion counts.
+**What it is:** Config audit table — one row per source table per run. Stores the exact `input_params.yml` parameters used for each source (filters, conversion logic, lookback period, etc.) plus `profiles_scored` (total profiles in the union before scoring). Use it to verify the correct config was applied and to debug unexpected results.
 
 ```sql
-SELECT *
+-- One row per source table — confirm all expected sources ran
+SELECT event_name, src_table, profiles_scored, lookback_period,
+       apply_time_filter, conversion_flag, custom_filter
 FROM ${sink_database}.nba_dash_model_metrics
-ORDER BY session_id DESC
-LIMIT 5;
+WHERE session_id = (SELECT MAX(session_id) FROM ${sink_database}.nba_dash_model_metrics)
+ORDER BY event_name;
 ```
 
 **Pass criteria:**
-- Latest session row is present
-- `total_profiles` matches `distinct_profiles` from check 1
-- `total_conversions` > 0 (confirms `enriched_orders` conversion flag fired correctly)
-- `run_date` matches today's date
+- One row per configured source (expect 4 rows: `pageviews`, `email_events`, `sales_rep_interactions`, `order_events`)
+- `profiles_scored` is the same value across all rows (all sources feed the same union) and is ≥ `distinct_profiles` in `nba_combined_metrics_final`
+- `apply_time_filter` = `true` for all sources (confirms time filter was applied)
+- `lookback_period` matches the configured value (e.g. `-365d`)
+- `conversion_flag` = `1` only for `order_events`; `0.0` for all other sources
+- `custom_filter` for `email_events` contains `send` exclusion
+- `custom_filter` for `order_events` contains `order_status` filter
 
 ---
 
@@ -91,10 +94,10 @@ LIMIT 5;
 **What it is:** One row per source table per run — event counts and profile counts per source.
 
 ```sql
-SELECT *
+SELECT source_table, num_events, unique_profiles, total_conversions, total_spend, day_range, min_date, max_date
 FROM ${sink_database}.nba_dash_source_tables
-WHERE session_id = <latest_session_id>
-ORDER BY src_table;
+WHERE session_id = (SELECT MAX(session_id) FROM ${sink_database}.nba_dash_model_metrics)
+ORDER BY num_events DESC;
 ```
 
 **Pass criteria:**
@@ -111,12 +114,12 @@ ORDER BY src_table;
 
 ```sql
 -- Cart-abandon flag distribution
-SELECT cart_abandon, COUNT(*) AS cnt
+SELECT cart_abandon_flag, COUNT(*) AS cnt
 FROM ${sink_database}.nba_combined_metrics_final
 GROUP BY 1;
 
 -- New-visitor flag distribution
-SELECT new_visitor, COUNT(*) AS cnt
+SELECT new_visitor_flag, COUNT(*) AS cnt
 FROM ${sink_database}.nba_combined_metrics_final
 GROUP BY 1;
 ```
