@@ -75,7 +75,7 @@ Page title: `NBA Scores Requirements - <Customer>`
 
 Body template: `workflow-setup/references/requirements_doc.md`
 
-Key questions the requirements doc must answer: parent segment name, scoring strategy (`percentile` / `quartile` / `minmax`), cart-abandon window (days), new-visitor window (days), time-of-day granularity (4-bucket default), ESP / activation channel.
+Key questions the requirements doc must answer: parent segment name, output DB name, scoring strategy (`percentile` / `quartile` / `minmax`), cart-abandon window (days), new-visitor window (days), time-of-day granularity (4-bucket default), ESP / activation channel.
 
 ### Phase 3: Push Minimal Workflow
 
