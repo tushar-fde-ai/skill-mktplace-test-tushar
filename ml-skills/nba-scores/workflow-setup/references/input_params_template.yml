@@ -1,7 +1,7 @@
 #####################################################################
 ########################## GLOBAL PARAMS ############################
 #####################################################################
-sink_database: <customer_database>                # database where all model output tables will be saved
+sink_database: <output_database>                         # database where all model output tables will be saved
 unique_user_id: canonical_id                      # main join key across all behavior tables (typically canonical_id from ID Unification)
 api_endpoint: 'api.treasuredata.com'              # endpoint for the region of the current TD account, use api.eu01.treasuredata.com for EU
 model_config_table: 'datamodel_build_history'     # stores list of datamodel names and OIDs existing in the TD account; used to find if datamodel_name already exists and should only be updated
