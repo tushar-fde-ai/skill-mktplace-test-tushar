@@ -92,10 +92,7 @@ Read `workflow-setup/references/yaml_structure.md` for the parameter reference.
 Read `workflow-setup/references/table_configuration.md` for per-source-type config.
 Use `workflow-setup/references/input_params_template.yml` as the starting point.
 
-After the workflow runs, validate output tables per `workflow-setup/references/eval.md`.
-
-**Key output table to check:** `nba_combined_metrics_final` — confirm it has rows and the expected score columns.
-**Dashboard tables to check:** `nba_dash_stats_summary`, `nba_dash_model_metrics`, `nba_dash_source_tables`.
+After the workflow run finishes, validate output tables following instructions in the `workflow-setup/references/eval.md`.
 
 ### Phase 4: Foundry Agent Setup
 
