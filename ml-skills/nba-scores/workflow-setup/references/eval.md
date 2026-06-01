@@ -1,126 +1,139 @@
-# Audience Agent — Test Categories & Failure-to-Fix Mapping
+# NBA Engagement Scores — Workflow Output Validation
 
-This file holds the **audience-specific content** for the test case lifecycle. The generic two-round flow + Confluence page format + `tdx agent test` mechanics live in `../../../shared/test_cases_pattern.md`.
+Run these checks after every workflow execution (Phase 3 minimal push and Phase 5 re-run). Use `tdx-skills:tdx-basic` to execute each query against `${sink_database}`.
 
-**Round 1 vs Round 2 context:**
-- **Round 1** runs against the *schema-derived draft* of `business_context.md` (Phase 4 Step 2 in the parent SKILL — Priority Attributes + PII exclusions auto-populated from `tdx ps desc -o`). The agent knows real columns; failures should skew toward business-specific gaps (terms like "VIP", segment naming, business rules) rather than schema ignorance.
-- **Round 2** runs after the customer's filled requirements doc has been merged into `business_context.md` (Phase 5).
+---
 
-## Skills to Load
+## 1. Primary Output Table — `nba_combined_metrics_final`
 
-- `tdx-skills:agent-test` — for `tdx agent test` mechanics, `test.yml` format, output parsing
-- `tdx-skills:parent-segment-analysis` — for schema discovery (Phase 4 Step 1)
+**What it is:** Final per-profile NBA scores. This is the table joined to the Parent Segment in Audience Studio.
 
-## Test Case Categories
-
-Generate 10-15 cases total, mixing complexity (simple / medium / complex) across these 5 (or 6) categories.
-
-### 1. Schema Discovery (2-3 cases)
-Confirms the agent uses `data_source_finder` and reports data quality. With the Phase 4 schema-derived draft loaded, the agent should *succeed* here in Round 1 (not just attempt).
-
-- "What customer attributes are available?"
-- "Show me an overview of the parent segment."
-- "What behavior tables exist?"
-
-Pass criteria: mentions `customers` table + at least one `behavior_*` table; reports null ratios for high-null columns; references the Priority Attributes from `business_context.md` when relevant.
-
-### 2. Attribute Queries (2-3 cases)
-Single-table queries on the customers table.
-
-- "How many customers do we have by [signup_channel]?"
-- "What's the distribution of [priority_attribute]?"
-
-Pass criteria: uses `query_database`, JOINs `customers` as base, returns valid SQL.
-
-### 3. Behavior Aggregations (2-3 cases)
-Multi-table queries crossing customers + behavior tables.
-
-- "How many [behavior_event] events per customer in the last 3 months?"
-- "Which customers had more than N [behavior] in the last 30 days?"
-
-Pass criteria: uses `TD_INTERVAL` correctly, joins on `cdp_customer_id`, respects 3-month default window.
-
-### 4. Segment Draft Creation (2-3 cases)
-Exercises the `:segment:` output.
-
-- "Create a segment of customers who [attribute condition] AND [behavior condition]."
-- "Create a segment that combines [existing_segment_name] but excludes [condition]."
-
-Pass criteria: produces valid JSON matching the `:segment:` output schema, acknowledges segment size before drafting, reuses `baseSegmentIds` for named-segment references.
-
-### 5. Ambiguous / Guardrail (2-3 cases)
-Confirms the agent asks for clarification or refuses appropriately.
-
-- "Tell me about the data." (should ask which type — attributes/behaviors/segments)
-- "Write Python code to analyze this." (should refuse per guardrails)
-- "[off-topic question]" (should politely decline)
-
-Pass criteria: ambiguous → calls `request_clarification`; off-topic → short polite rejection.
-
-### 6. SQL Templates *(only if customer provided in §9 of requirements)*
-Confirms the agent surfaces customer-supplied SQL patterns.
-
-- "[Question that maps to one of the customer's templates]"
-
-Pass criteria: agent references the template by name, adapts the SQL to the question, doesn't rewrite the template wholesale.
-
-## Example test.yml entries
-
-```yaml
-# TC-001
-- user_input: "What customer attributes are available?"
-  criteria:
-    - The response mentions the `customers` table
-    - The response lists at least 5 attribute columns
-    - The response includes null_ratio information for any columns with >50% nulls
-
-# TC-002
-- user_input: "How many customers do we have by signup_channel?"
-  criteria:
-    - The response contains a SQL query
-    - The SQL uses the `customers` table as base
-    - The SQL uses GROUP BY on signup_channel
-    - The response includes a chart or table output
-
-# TC-004
-- user_input: "Create a segment of VIP customers who haven't purchased in 90 days."
-  criteria:
-    - The agent reports the estimated segment size before drafting
-    - The final segment JSON includes a behavioral condition (purchases) and an attribute condition (VIP indicator)
-    - The JSON is valid against the `:segment:` output schema
+```sql
+-- Row count and distinct profile count
+SELECT COUNT(*) AS total_rows, COUNT(DISTINCT canonical_id) AS distinct_profiles
+FROM ${sink_database}.nba_combined_metrics_final;
 ```
 
-Multi-round (Discovery → Execution) test for complex cases:
+**Pass criteria:**
+- `total_rows > 0`
+- `distinct_profiles` is in the same order of magnitude as the Parent Segment profile count (within ~20%)
 
-```yaml
-# TC-010
-- rounds:
-    - user_input: "I want to find high-value customers who haven't purchased recently."
-      criteria:
-        - The agent announces it will search data sources
-        - The agent identifies at least one attribute (value) and one behavior (recency)
-    - user_input: "Yes, proceed with those columns."
-      criteria:
-        - The agent presents an execution plan with exact table/column names
-        - The response includes a segment size estimate before drafting
+```sql
+-- Confirm expected score columns exist and are non-null
+SELECT
+  COUNT(*) AS total,
+  COUNT(CASE WHEN channel IS NOT NULL THEN 1 END) AS has_channel,
+  COUNT(CASE WHEN activity_period IS NOT NULL THEN 1 END) AS has_activity_period,
+  COUNT(CASE WHEN cart_abandon IS NOT NULL THEN 1 END) AS has_cart_abandon,
+  COUNT(CASE WHEN new_visitor IS NOT NULL THEN 1 END) AS has_new_visitor
+FROM ${sink_database}.nba_combined_metrics_final;
 ```
 
-## Round 2 — Failure-to-Fix Mapping
+**Pass criteria:** All four score/flag columns are non-null for the majority of rows (>80%).
 
-When a test case still fails after Round 1 → customer requirements → Round 2:
-
-| Failure pattern | Fix location |
-|-----------------|--------------|
-| Agent uses wrong column name, misses business-specific term, includes excluded PII | `knowledge_bases/business_context.md` |
-| Agent ignores or rewrites a customer SQL template | `knowledge_bases/sql_templates.md` |
-| Agent tone is off, skips Discovery Stage step, drafts segments without sizing first | `Custom Audience Agent/prompt.md` |
-| Agent calls wrong sub-tool or fails schema lookup | Inspect `Clone Data Source Finder` / `Clone Questions Suggester` prompts (rare) |
-
-After each fix, re-push and re-test:
-
-```bash
-tdx agent push -y
-tdx agent test
+```sql
+-- Score distribution sanity check (quartile strategy → expect 4 distinct values per score)
+SELECT channel, COUNT(*) AS cnt
+FROM ${sink_database}.nba_combined_metrics_final
+GROUP BY 1 ORDER BY 2 DESC LIMIT 20;
 ```
 
-Update Round 2 column on the test cases Confluence page (full-page replace via `updateConfluencePage`). Stop when pass rate is acceptable. Document remaining failures as known limitations on the Phase 6 Eval Results page.
+**Pass criteria (quartile):** Channel values should resolve to recognizable channel names (e.g., `email`, `social`, `search`, `direct`) — not mostly `others`. If >70% of profiles land in `others`, UTM coverage may be too low or `top_k_channel_perc` needs tuning.
+
+---
+
+## 2. Dashboard Table — `nba_dash_stats_summary`
+
+**What it is:** Per-metric score distribution stats for the latest run. Consumed by the NBA Insights Agent.
+
+```sql
+SELECT MAX(session_id) AS latest_session FROM ${sink_database}.nba_dash_model_metrics;
+```
+
+Then use that `session_id`:
+
+```sql
+SELECT *
+FROM ${sink_database}.nba_dash_stats_summary
+WHERE session_id = <latest_session_id>
+ORDER BY metric_name
+LIMIT 50;
+```
+
+**Pass criteria:**
+- Rows exist for the latest session
+- `metric_name` values cover channel, activity_period, cart_abandon, new_visitor
+- Score distributions look reasonable — for quartile, expect roughly equal bucket sizes (~25% each)
+
+---
+
+## 3. Dashboard Table — `nba_dash_model_metrics`
+
+**What it is:** One row per workflow run — run metadata, profile counts, conversion counts.
+
+```sql
+SELECT *
+FROM ${sink_database}.nba_dash_model_metrics
+ORDER BY session_id DESC
+LIMIT 5;
+```
+
+**Pass criteria:**
+- Latest session row is present
+- `total_profiles` matches `distinct_profiles` from check 1
+- `total_conversions` > 0 (confirms `enriched_orders` conversion flag fired correctly)
+- `run_date` matches today's date
+
+---
+
+## 4. Dashboard Table — `nba_dash_source_tables`
+
+**What it is:** One row per source table per run — event counts and profile counts per source.
+
+```sql
+SELECT *
+FROM ${sink_database}.nba_dash_source_tables
+WHERE session_id = <latest_session_id>
+ORDER BY src_table;
+```
+
+**Pass criteria:**
+- One row per configured source table (expect 4 rows: `pageviews`, `email_events`, `sales_rep_interactions`, `order_events`)
+- `event_count` for each source is non-zero and proportional to what we know about the data:
+  - `pageviews` should have the highest event count (~568K rows in source)
+  - `order_events` should be lowest (~97K valid rows after status filter)
+  - `email_events` and `sales_rep_interactions` should fall in between
+- `profile_count` per source should be less than or equal to `total_profiles` in `nba_dash_model_metrics`
+
+---
+
+## 5. Flag Sanity Checks
+
+```sql
+-- Cart-abandon flag distribution
+SELECT cart_abandon, COUNT(*) AS cnt
+FROM ${sink_database}.nba_combined_metrics_final
+GROUP BY 1;
+
+-- New-visitor flag distribution
+SELECT new_visitor, COUNT(*) AS cnt
+FROM ${sink_database}.nba_combined_metrics_final
+GROUP BY 1;
+```
+
+**Pass criteria:**
+- Both flags have a mix of 0 and 1 values — all-zero means the regexp or lookback window is not matching
+- Cart-abandon rate should be a small fraction of total profiles (typically 5–20%)
+- New-visitor rate depends on data age but should not be 0% or 100%
+
+---
+
+## Common Failure Modes
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| `nba_combined_metrics_final` is empty | Workflow failed mid-run or `sink_database` doesn't exist | Check attempt logs: `tdx wf attempt <id> logs +nba_metrics_table` |
+| All `channel` values are `others` | UTM coverage too low or `top_k_channel_perc` too high | Lower `top_k_channel_perc` to `0.0001`; check UTM coverage on pageviews |
+| `cart_abandon` is all 0 | `abandon_regexp` doesn't match actual event_type values | Query `event_type` distinct values from `nba_combined_user_events` and update `abandon_regexp` |
+| `nba_dash_source_tables` missing a source | That source table had 0 rows after time filter | Check `apply_time_filter` + `lookback_period`; verify source table has data in the window |
+| Profile count much lower than Parent Segment | Source tables don't cover the full audience | Confirm `canonical_id` join key is consistent; check for NULL profile IDs in source tables |
