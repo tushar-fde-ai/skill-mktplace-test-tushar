@@ -79,3 +79,25 @@ updateConfluencePage:
 | Phase 4 Round 1 tests | Current phase → 5 (waiting), Test cases page URL, Round 1 pass rate, failing TC-IDs |
 | Phase 5 Round 2 tests | Current phase → 6, Round 2 pass rate, remaining limitations |
 | Phase 6 docs | Current phase → "complete — engagement live", all 5 doc URLs populated |
+
+
+## Project Stages Summary
+Below are the standard project stages that each ml-solution follows:
+
+### Phase 1: Data Exploration
+Explore customer data
+
+### Phase 2: Create Customer Requirements Doc on Confluence
+Create Initial Confluence Pages 
+
+### Phase 3: Push Minimal Version of Workflow
+Push workflow first-draft version based on initial data exploration and requirements gathering template
+
+### Phase 4: Minimal Agent Setup and Validation
+Setup initial agent version and validate
+
+### Phase 5: Update Workflow with Customer Requirements (Round 2)
+Update existing workflow with new params based on customer feedback and re-run workflow and perform output validation
+
+### Phase 6: Customer-Specific Documentation
+Prepare final PROD_ready documentation for customer enablement and project hand-off

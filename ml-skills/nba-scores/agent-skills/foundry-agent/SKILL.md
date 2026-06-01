@@ -110,6 +110,8 @@ Create the LLM project in TD if it doesn't already exist:
 tdx llm project create "<confirmed_project_name>"
 ```
 
+**Save the project ID** from the output immediately — record it in the Current Project State Confluence page. You'll need it in Step 5b.
+
 Then push from the `foundry_agent/` directory:
 
 ```bash
@@ -120,6 +122,29 @@ tdx agent push -y
 If the project already exists, skip the create step — `tdx agent push` will push updates to the existing project.
 
 This pushes the `NBA Insights Agent` definition, all 5 knowledge bases, and the starter message to the TD instance.
+
+### Step 5b: Patch `:react:` Output Type via API
+
+**`tdx agent push` silently drops `artifact_type` fields** — the `:react:` output registers as "Custom" in the UI instead of "React Artifact", causing React dashboard generation to fail. You must patch it directly via the API after every push.
+
+Use the project ID saved in Step 5. Get the agent ID, then PATCH:
+
+```bash
+# Step 1: get agent ID (one call, using saved project ID)
+AGENT_ID=$(curl -s \
+  -H "Authorization: TD1 $TDX_API_KEY__TDX_STUDIO_US01_13043" \
+  "https://llm-api.treasuredata.com/api/agents?filter[projectId]=<project_id>" \
+  | python3 -c "import sys,json; print(json.load(sys.stdin)['data'][0]['id'])")
+
+# Step 2: patch :react: output to REACT_OUTPUT type
+curl -s -X PATCH \
+  -H "Authorization: TD1 $TDX_API_KEY__TDX_STUDIO_US01_13043" \
+  -H "Content-Type: application/vnd.api+json" \
+  "https://llm-api.treasuredata.com/api/agents/$AGENT_ID" \
+  -d "{\"data\":{\"type\":\"agents\",\"id\":\"$AGENT_ID\",\"attributes\":{\"name\":\"NBA Insights Agent\",\"modelType\":\"claude-4.5-sonnet\",\"outputs\":[{\"name\":\":plotly:\",\"functionName\":\"newPlot\",\"functionDescription\":\"Plotly chart output\",\"jsonSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"data\\\":{\\\"type\\\":\\\"array\\\",\\\"items\\\":{\\\"type\\\":\\\"object\\\"}},\\\"layout\\\":{\\\"type\\\":\\\"object\\\"}},\\\"required\\\":[\\\"data\\\"]}\",\"artifactType\":null,\"artifactContentType\":null},{\"name\":\":react:\",\"functionName\":\"renderReactApp\",\"functionDescription\":\"Use this to render React.js dashboards\",\"jsonSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"react\\\":{\\\"type\\\":\\\"string\\\"}},\\\"required\\\":[\\\"react\\\"]}\",\"artifactType\":\"REACT_OUTPUT\",\"artifactContentType\":\"REACT_OUTPUT\"}]}}}"
+```
+
+Verify the patch succeeded — the response should show `"artifactType":"REACT_OUTPUT"` on the `:react:` output. The UI should now show "React Artifact" instead of "Custom".
 
 ### Step 6: Verify Deployment
 

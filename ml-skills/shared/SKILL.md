@@ -93,11 +93,13 @@ Solution-specific:
 - Page title: `<Solution Name> Requirements - <Customer>` (suffix is mandatory — Confluence enforces unique titles per space)
 - Body template: see `workflow-setup/references/requirements_doc.md` (TODO — needs solution-specific section list)
 
-### Phase 3: Push Minimal Version of Workflow
+### Phase 3: Push Minimal Version of Workflow and Setup Example Audiences
 
 Read `../shared/push_pattern_td_workflows.md` for the full push flow. Read `<Solution Name>/SKILL.md` for the solution-specific instructions on what reference files to use for initial workflow setup.
 
 After workflow is done running perform quick validation of expected output tables. Read `<Solution Name>/workflow-setup/references/eval.md`
+
+After validation, ask user if they want to add some attributes from the final output table to the Parent Segment and create a solution specific folder in Audience Studio with example audiences. Default name for the Audience Studio Folder should be `FDE Solutions - <Solution Name> Examples`. Agent should always tell the user which Parent Segment and which Folder it plans to setup the example audiences in and give them a choice to approve or change if needed.
 
 After validation, update **Current Project State**: Phase 3 complete, project name, push date.
 
