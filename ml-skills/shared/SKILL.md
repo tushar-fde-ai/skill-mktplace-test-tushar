@@ -94,7 +94,7 @@ Solution-specific:
 - Page title: `<Solution Name> Requirements - <Customer>` (suffix is mandatory — Confluence enforces unique titles per space)
 - Body template: see `workflow-setup/references/requirements_doc.md` (TODO — needs solution-specific section list)
 
-### Phase 3: Push Minimal Version of Workflow and Setup Example Audiences
+### Phase 3: Push Minimal Version of Workflow
 
 Read `../shared/push_pattern_td_workflows.md` for the full push flow. Read `<Solution Name>/SKILL.md` for the solution-specific instructions on what reference files to use for initial workflow setup.
 
@@ -126,7 +126,7 @@ Solution-specific updates:
 2. Update existing workflow with new params based on customer feedback — TODO list which files.
 3. Re-run wf and perform output table validation (Round 2).
 
-### Phase 6: Customer-Specific Documentation
+### Phase 6: Update Parent Segment and Create Handoff Customer Documentation
 
 If resuming in a new session, **first read Current Project State**.
 
