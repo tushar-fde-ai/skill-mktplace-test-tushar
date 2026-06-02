@@ -53,7 +53,7 @@ These values are populated dynamically based on which solution is being set up. 
 
 Before starting any phase, ask the user: **"Is this a new solution engagement, or are you resuming an existing one?"**
 
-- **New engagement:** start at Phase 1.
+- **New engagement:** First present high-level project plan summary and what tasks will be done during each stage. Then start at Phase 1. 
 - **Resume:** ask for the customer name, search Confluence for `Current Project State - <Customer>` (see `../shared/current_project_state.md`). Read it — its "Current phase" + "Next Action" fields say where to pick up.
 
 Common phrases mapped to phases:
@@ -75,7 +75,7 @@ The flow mirrors the audience agent: push first → gather requirements → two-
 
 ### Phase 1: Data Exploration
 
-Read `../shared/push_pattern_fresh_project.md` Step 1 for project naming convention.
+Read `../shared/push_pattern_new_llm_project.md` Step 1 for project naming convention.
 
 Analytics-specific:
 1. Ask for the **customer name**.
