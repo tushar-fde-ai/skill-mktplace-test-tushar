@@ -1,7 +1,7 @@
 ---
 name: shared-fde-ml-solution-patterns
 description: |
-  Index of reusable patterns shared across all ml-skills FDE solutions (rfm, nbp, mta etc.). Loaded by solution SKILLs to reuse Confluence folder setup, Current Project State page, push patterns, requirements doc workflow, test case lifecycle, and Phase 6 documentation page set. Not invoked directly — read individual files within this folder as called for by the solution SKILL.
+  Index of reusable patterns shared across all ml-skills FDE solutions (rfm, nbp, mta, nba-scores etc.). Loaded by solution SKILLs to reuse Confluence folder setup, Current Project State page, push patterns, requirements doc workflow, test case lifecycle, and Phase 6 documentation page set. Not invoked directly — read individual files within this folder as called for by the solution SKILL. FOR ML-SKILLS ONLY — do not use for fde-general-skills solutions (custom-audience-agent, custom-analytics-agent). Those solutions use general-skills/shared/SKILL.md instead.
 ---
 
 # Shared Patterns for FDE ML Skills
@@ -77,14 +77,11 @@ The flow mirrors the audience agent: push first → gather requirements → two-
 
 Read `../shared/push_pattern_new_llm_project.md` Step 1 for project naming convention.
 
-Analytics-specific:
-1. Ask for the **customer name**.
-2. Choose a project name following `<Customer> <Solution Name>` convention.
-3. TODO: any pre-push schema discovery the analytics agent needs? Probably yes if it queries a specific database — list the relevant skills and commands here.
+> **Solution SKILL overrides this phase entirely.** The calling solution's `SKILL.md` defines Phase 1 data exploration steps — which databases to explore, which table types to classify, and which columns to capture. Read the solution SKILL before running Phase 1.
 
 ### Phase 2: Create Customer Requirements Doc on Confluence
 
-Read `../shared/confluence_folder_setup.md` for folder discovery + creation (the `Custom Analytics Agent` folder under `<Customer>/FDE Solutions/`).
+Read `../shared/confluence_folder_setup.md` for folder discovery + creation.
 
 Read `../shared/current_project_state.md` for the State page setup — create it now, before the requirements doc.
 
@@ -92,27 +89,23 @@ Read `../shared/requirements_doc_pattern.md` for the customer-shareable page wor
 
 Solution-specific:
 - Page title: `<Solution Name> Requirements - <Customer>` (suffix is mandatory — Confluence enforces unique titles per space)
-- Body template: see `workflow-setup/references/requirements_doc.md` (TODO — needs solution-specific section list)
+- Body template: see the solution's `workflow-setup/references/requirements_doc.md`
 
 ### Phase 3: Push Minimal Version of Workflow
 
-Read `../shared/push_pattern_td_workflows.md` for the full push flow. Read `<Solution Name>/SKILL.md` for the solution-specific instructions on what reference files to use for initial workflow setup.
+Read `../shared/push_pattern_td_workflows.md` for the full push flow. Read the solution's `SKILL.md` for solution-specific instructions on what reference files to use for initial workflow setup.
 
-After workflow is done running perform quick validation of expected output tables. Read `<Solution Name>/workflow-setup/references/eval.md`
+After workflow is done running perform quick validation of expected output tables. Read the solution's `workflow-setup/references/eval.md`.
 
 After validation, update **Current Project State**: Phase 3 complete, project name, push date.
 
 ### Phase 4: Minimal Agent Setup and Validation
 
-Read `../shared/push_pattern_new_llm_project.md` for the full push flow (clone, set tdx.json, `tdx llm project create`, `tdx agent push -y`). Read `<Solution Name>/agent-skills/foundry-agent/SKILL.md` for the solution-specific files-to-edit table.
+Read `../shared/push_pattern_new_llm_project.md` for the full push flow (clone, set tdx.json, `tdx llm project create`, `tdx agent push -y`). Read the solution's `agent-skills/foundry-agent/SKILL.md` for the solution-specific files-to-edit table and integration check prompt.
 
-Solution-specific:
-- Template repo: TODO
-- populate business_context.md knowledge base with your inferred knowledge from Phases 1 and 2
-- Integration check substring: TODO
-- No `rm -rf` step (fresh project, no read-only platform agents)
+> **Solution SKILL provides:** template repo URL, files to edit (knowledge bases, business context), and the integration check prompt to run after push.
 
-After Foundry agent setup perform quick summary of the validation process performed as instructed by the `<Solution Name>/agent-skills/foundry-agent/SKILL.md` file.
+After Foundry agent setup perform quick summary of the validation process performed as instructed by the solution's `agent-skills/foundry-agent/SKILL.md` file.
 
 After validation, update **Current Project State**: Phase 4 complete, project name, push date.
 
@@ -122,9 +115,9 @@ Almost always a new session. **First action: read Current Project State.**
 
 Solution-specific updates:
 1. Read filled requirements doc.
-2. Present summary of updates you plan to push to existing workflow and ask customer to provide any additional context if needed
-2. Update existing workflow with new params based on customer feedback — TODO list which files.
-3. Re-run wf and perform output table validation (Round 2).
+2. Present summary of updates you plan to push to existing workflow and ask customer to provide any additional context if needed.
+3. Update existing workflow with new params based on customer feedback — see solution's `workflow-setup/references/workflow_setup_guide.md` for which files to edit.
+4. Re-run wf and perform output table validation (Round 2).
 
 ### Phase 6: Update Parent Segment and Create Handoff Customer Documentation
 
@@ -137,17 +130,16 @@ Read the solution's `prod-docs/references/parent_segment.md` for the "what" (whi
 **Step 2+ — Confluence documentation pages.**
 Read `../shared/customer_docs_pattern.md` for the 5-page set + create order + keep-current rules.
 
-Analytics-specific page content: see `prod-docs/references/` (TODO).
+Analytics-specific page content: see the solution's `prod-docs/references/` directory — each solution provides its own content for the 5 documentation pages.
 
 ## Sub-Folder Reference
 
 | Folder / File | Contents |
 |---------------|----------|
-| `agent-skills/foundry-agent/SKILL.md` | solution-specific Phase 2 + Phase 5 file edits — TODO |
-| `workflow-setup/references/requirements_doc.md` | solution-specific customer-fillable body template — TODO |
-| `workflow-setup/references/eval.md` | solution-specific test categories + example prompts — TODO |
-| `prod-docs/references/` | solution-specific content for the Phase 6 documentation page set — TODO |
+| `agent-skills/foundry-agent/SKILL.md` | Solution-specific Phase 4 instructions — template repo URL, files to edit, integration check prompt |
+| `workflow-setup/references/requirements_doc.md` | Solution-specific customer-fillable requirements body template |
+| `workflow-setup/references/eval.md` | Solution-specific output table validation checks after each workflow run |
+| `prod-docs/references/` | Solution-specific content for the Phase 6 documentation page set (Architecture, Behavior, Eval Results, Runbook, Access & Ownership) |
 | `../shared/*.md` | Generic patterns reused across all ml-skills solutions |
-
 
 Solution SKILLs handle the *what* (which tables, which YAML parameters, which output tables to validate). The shared files handle the *how* (Confluence flow, push mechanics, validation rhythm).

@@ -66,12 +66,12 @@ Show a table of ALL activity tables found with your recommendation (include / ex
 
 These become `input_params.yml` values.
 
-**Confluence folder name for this solution:** `NBA Scores`
+**Confluence folder name for this solution:** `NBA Engagement Scores`
 **Title variants for fuzzy matching:** `NBA`, `NBA Scores`, `NBA Engagement Scores`, `Next Best Action`
 
 ### Phase 2: Requirements Doc
 
-Page title: `NBA Scores Requirements - <Customer>`
+Page title: `NBA Engagement Scores Requirements - <Customer>`
 
 Body template: `workflow-setup/references/requirements_doc.md`
 
