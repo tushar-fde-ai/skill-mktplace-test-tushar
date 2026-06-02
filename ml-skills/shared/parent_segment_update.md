@@ -119,14 +119,38 @@ Show the full list of planned segments with a one-line description of each. Ask:
 
 Wait for approval before creating any YAML files.
 
-### 3d. Create and push segments
+### 3d. Create the folder first — ALWAYS before pushing any segments
 
-Create one YAML file per segment. Set `folder:` to the confirmed folder name — Audience Studio creates the folder automatically on the first push if it doesn't already exist.
+**`folder:` in the segment YAML does NOT control folder placement.** Folder assignment is determined entirely by the **directory structure** — the subdirectory the YAML file lives in. The `folder:` field is just metadata.
+
+**Step 1 — Create the folder in Audience Studio:**
+```bash
+tdx sg folder create "<Parent Segment Name>" "<folder name>"
+```
+
+Example:
+```bash
+tdx sg folder create "Automotive Demo" "FDE Solutions - NBA Scores Examples"
+```
+
+**Step 2 — Place segment YAML files inside a subdirectory of the same name:**
+```
+segments/automotive-demo/
+└── FDE Solutions - NBA Scores Examples/   ← subdirectory name must match folder name
+    ├── nba_top_email_channel.yml
+    ├── nba_morning_engagers.yml
+    └── ...
+```
+
+The subdirectory name is what `tdx sg push` uses to resolve the folder. The push summary will confirm placement: `FDE Solutions - NBA Scores Examples/[NBA] Top Email Channel`.
+
+### 3e. Create and push segments
+
+Create one YAML file per segment inside the folder subdirectory. The `folder:` field in the YAML is optional metadata — placement is driven by directory structure.
 
 ```yaml
 name: "[<Solution>] <Segment Name>"
 description: "<one-line description>"
-folder: "FDE Solutions - <Solution Name> Examples"
 rules:
   - type: Value
     attribute:
@@ -136,18 +160,20 @@ rules:
     value: <value>
 ```
 
-Push each segment:
-
+Push from inside the subdirectory:
 ```bash
+cd "segments/automotive-demo/FDE Solutions - NBA Scores Examples"
 tdx sg push <segment-file>.yml -y
 ```
 
-Collect the console URL returned after each push.
+Confirm folder placement in the push summary output — it should read `<folder name>/<segment name>`, not just `<segment name>`.
 
-### 3e. Common mistakes to avoid
+### 3f. Common mistakes to avoid
 
-- **Do not push segments before the PS attribute block is live** — Audience Studio will reject rules that reference columns not yet in the PS schema.
-- **Do not create the folder manually** — the `folder:` field handles it automatically on first push.
+- **Do not push from the parent segment root directory** — segments land at root regardless of `folder:` in the YAML.
+- **Do not rely on the `folder:` YAML field for placement** — it is metadata only; directory structure controls placement.
+- **Do not push segments before creating the folder** — the folder must exist server-side before the first push.
+- **Do not push segments before the PS attribute block is live** — Audience Studio will reject rules referencing columns not yet in the PS schema.
 - **Do not use `behaviors` columns in segment rules** — example segments should only filter on the newly added `attributes` columns.
 
 ---
