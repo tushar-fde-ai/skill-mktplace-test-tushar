@@ -26,6 +26,10 @@ Master Orchestrator Agent
 
 ## Setup Workflow
 
+Follow `../../../shared/push_pattern_new_llm_project.md` for the general push mechanics (project naming via `AskUserQuestion`, clone, set `tdx.json`, `tdx llm project create`, `tdx agent push -y`). The MTA-specific steps below cover agent structure review and knowledge base configuration.
+
+**Default Foundry project name:** `MTA Journey Analysis`
+
 ### Step 1: Clone the Repository
 
 ```bash
@@ -87,42 +91,20 @@ If the customer's `sink_database` differs from the template default, update thes
 
 Also review `knowledge_bases/business_context.md` — if it contains template-specific business context (e.g., references to a different customer), update it to reflect the current customer's business.
 
-### Step 4: Choose Project Name and Update tdx.json
+### Step 3: Configure Knowledge Bases for Customer Data
 
-Ask the user:
+The knowledge base YAML files reference the output database. Verify they point to the correct `sink_database` from the MTA workflow config:
 
-> Would you like to push this agent with the default project name `MTA Journey Analysis`, or would you like to provide a custom project name?
+- `knowledge_bases/journey_tables.yml` — should reference the database containing `mta_journeys`, `mta_sankey_journeys`, `journey_src_union_summary`
+- `knowledge_bases/mta_model_tables.yml` — should reference the database containing `mta_models_standard`, `mta_markov_attribution`, `mta_shapley_attribution_final`
 
-Once confirmed, update `tdx.json` with the chosen name:
+If the customer's `sink_database` differs from the template default, update these files.
 
-```json
-{
-  "llm_project": "<confirmed_project_name>"
-}
-```
+Also review `knowledge_bases/business_context.md` — if it contains template-specific business context (e.g., references to a different customer), update it to reflect the current customer's business.
 
-### Step 5: Create Project and Push
+### Step 4: Create Project, Push, and Verify Deployment
 
-First, create the project in TD (required if it doesn't already exist):
-
-```bash
-tdx llm project create "<confirmed_project_name>"
-```
-
-Then push from the foundry_agent directory:
-
-```bash
-cd /path/to/mta_journey_analysis/foundry_agent
-tdx agent push -y
-```
-
-If the project already exists, skip the create step — `tdx agent push` will push updates to the existing project.
-
-This pushes all agents, knowledge bases, prompts, and chat interfaces to the TD instance.
-
-### Step 6: Verify Deployment
-
-After push succeeds:
+Follow `../../../shared/push_pattern_new_llm_project.md` Steps 5–7 to create the project, push, and verify. After push succeeds, run the integration check:
 
 ```bash
 tdx agents                                    # List agents in the project

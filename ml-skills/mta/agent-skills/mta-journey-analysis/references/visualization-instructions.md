@@ -12,8 +12,23 @@ For standard chart types. Parameters:
 - `nodes` + `links` — for sankey charts (nodes: `[{name}]`, links: `[{source, target, value}]`)
 - `treemap_data` — for treemap charts (`[{name, value}]`)
 
-### render_react
-For complex interactive dashboards requiring multiple coordinated charts or custom interactivity:
+### Templated HTML dashboard (`dashboard_template.html`)
+
+Use this when the user asks for a **shareable, exportable, standalone HTML dashboard** — an artifact they can email, host, or open offline. Don't use `render_react` for this — that's chat-only.
+
+- Template lives at `references/dashboard_template.html`
+- The leading HTML comment in the template documents every `{{TOKEN}}` and all 8 source queries
+- To generate the dashboard:
+  1. Read `references/dashboard_template.html`
+  2. Run all 8 queries documented in the template comment against `${sink_database}`
+  3. Strip the leading HTML comment block
+  4. Replace every `{{TOKEN}}` with real values from query results
+  5. Write the populated file to `.customer-configs/<customer_slug>/mta_model_summary_dashboard.html`
+  6. Open with `mcp__work__open_file`
+- All visual structure (TD palette, layout, tab shapes, Sankey, Chart.js config) is fixed — only data tokens change
+- Substitution rules: thousands separators for integers, 1 decimal + "%" for percentages, valid JSON literals for `_json` tokens, pre-rendered `<tr>` HTML for `_rows` tokens
+- `{{utm_gauge_dashoffset}}`: compute as `ROUND(157 - (utm_coverage_pct / 100 * 157), 0)`
+- `{{sankey_flows_json}}`: array of `{from, to, flow}` objects where `flow = ROUND(trans_prob * 100, 0)`
 - Write a single component: `export default function ComponentName({ data })`
 - React hooks (useState, useEffect, useMemo) and all Recharts components are available as globals — do NOT import them
 - Use Tailwind CSS for styling with `dark:` variants for dark mode

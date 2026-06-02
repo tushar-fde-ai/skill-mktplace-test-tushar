@@ -29,23 +29,40 @@ Web touchpoints with UTM-based channel attribution. Can also define web-based co
 - **User ID**: `canonical_id`
 - **URL**: `td_url` or `page_url` (for UTM extraction and conversion pattern matching)
 
-### Discovery Steps
+### Discovery Steps — Run all steps in order before configuring
 
+**Step 1 — Identify the URL column name:**
 ```sql
-SHOW TABLES IN database_name LIKE '%pageview%';
-DESCRIBE database_name.enriched_pageviews;
-SELECT * FROM database_name.enriched_pageviews LIMIT 10;
+DESCRIBE database_name.web_table;
+```
+Look for a column named `td_url`, `page_url`, `url`, `landing_url`, etc. Use the actual name as `<url_col>` in the steps below.
 
--- Check UTM parameter availability
-SELECT url_extract_parameter(td_url, 'utm_source') as source,
-       url_extract_parameter(td_url, 'utm_medium') as medium,
-       COUNT(*) as cnt
-FROM database_name.enriched_pageviews
-WHERE td_url IS NOT NULL
-GROUP BY 1, 2 ORDER BY 3 DESC LIMIT 20;
+**Step 2 — REQUIRED: Check UTM coverage (substitute actual `<url_col>` from Step 1):**
+```sql
+SELECT
+  COUNT(*) AS total_rows,
+  COUNT(CASE WHEN url_extract_parameter(<url_col>, 'utm_source') IS NOT NULL THEN 1 END) AS has_utm_source,
+  COUNT(CASE WHEN url_extract_parameter(<url_col>, 'utm_medium') IS NOT NULL THEN 1 END) AS has_utm_medium,
+  COUNT(CASE WHEN url_extract_parameter(<url_col>, 'utm_campaign') IS NOT NULL THEN 1 END) AS has_utm_campaign
+FROM database_name.web_table;
+```
+> ⚠️ **Do NOT assume UTM absence from visual inspection of sample URL values. You must run this query.** Clean-looking path values (e.g. `/blog/best-suvs-2025`) may still have UTM params on a large fraction of rows.
 
--- Check for conversion URL patterns
-SELECT td_path, COUNT(*) FROM database_name.enriched_pageviews
+**Step 3 — If UTMs present (> 0 rows), sample the values:**
+```sql
+SELECT
+  url_extract_parameter(<url_col>, 'utm_source') AS utm_source,
+  url_extract_parameter(<url_col>, 'utm_medium') AS utm_medium,
+  url_extract_parameter(<url_col>, 'utm_campaign') AS utm_campaign,
+  COUNT(*) AS cnt
+FROM database_name.web_table
+WHERE <url_col> LIKE '%utm_%'
+GROUP BY 1, 2, 3 ORDER BY 4 DESC LIMIT 20;
+```
+
+**Step 4 — Check for conversion URL patterns:**
+```sql
+SELECT td_path, COUNT(*) FROM database_name.web_table
 WHERE REGEXP_LIKE(lower(td_path), 'thank|confirm|success|checkout')
 GROUP BY 1 ORDER BY 2 DESC LIMIT 20;
 ```

@@ -74,10 +74,11 @@ updateConfluencePage:
 
 | Phase complete | Update fields |
 |---|---|
-| Phase 2 push | Current phase → 3, project name + push date in Key Decisions |
-| Phase 3 requirements doc | Current phase → 4 (or 5 if waiting), Requirements doc URL, customer notification date |
-| Phase 4 Round 1 tests | Current phase → 5 (waiting), Test cases page URL, Round 1 pass rate, failing TC-IDs |
-| Phase 5 Round 2 tests | Current phase → 6, Round 2 pass rate, remaining limitations |
+| Phase 1 data exploration | Current phase → 2, confirmed source tables + key columns in Key Decisions |
+| Phase 2 Confluence setup | Current phase → 3, solution folder ID, requirements doc URL |
+| Phase 3 workflow push | Current phase → 4, workflow project name + push date in Key Decisions. **Add a "Phase 3 Validation Results" section** with one sub-section per output table: table name, row count, and a 1–2 line plain-language summary of what the numbers show (e.g. source coverage, conversion counts, top channels, model scores). Use the solution's `workflow-setup/references/eval.md` queries to gather the numbers. |
+| Phase 4 agent setup | Current phase → 5 (waiting for requirements), Foundry project name + push date, integration check result |
+| Phase 5 workflow update | Current phase → 6, updated params summary, re-run validation results (same format as Phase 3) |
 | Phase 6 docs | Current phase → "complete — engagement live", all 5 doc URLs populated |
 
 

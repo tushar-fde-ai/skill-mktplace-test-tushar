@@ -173,7 +173,7 @@ After the initial questions, build a per-source inventory. For each touchpoint, 
 | **Table name** | `<db>.enriched_pageviews` | `<db>.enriched_orders` | `<db>.enriched_email_events` | `<db>.sales_rep_interactions` | `<db>.<table>` |
 | **`unixtime_col`** | `time` | `time` | `time` | `time` | ? |
 | **Profile ID** | `canonical_id` | `canonical_id` | `canonical_id` | `canonical_id` | ? |
-| **URL column** | `td_url` | N/A | N/A | N/A | ? |
+| **URL column** | `td_url` or `page_url` — **run UTM coverage query after DESCRIBE; do NOT assume absence from sample values** | N/A | N/A | N/A | ? |
 | **Referrer column** | `td_referrer` | N/A | N/A | N/A | ? |
 | **Channel/source/campaign** | UTM from URL | N/A | `campaign_name`, `email_name` | `source`, `topic` | ? |
 | **`conversion_flag`** | URL pattern OR `0.0` | `1.0` (with status filter) | `0.0` | `0.0` | ? |
@@ -185,7 +185,7 @@ For each table, verify three things using `tdx-skills:tdx-basic`:
 2. The profile ID column matches `unique_user_id`
 3. The conversion logic / channel-extraction columns are present
 
-See `table_configuration.md` for per-source-type discovery queries.
+For any web/pageview table, you **must** run the UTM coverage query from `table_configuration.md` Step 2 — do not assume UTM absence from visual inspection of URL sample values. Identify the URL column name via `DESCRIBE` first, then substitute it into the query.
 
 ---
 

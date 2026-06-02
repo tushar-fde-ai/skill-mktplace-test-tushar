@@ -16,12 +16,12 @@ The customer's TD instance does not auto-provision a project for this solution. 
 
 ## Step 1: Choose Project Name
 
-**Always use `AskUserQuestion` to ask for the project name** — never assume the default. Present the solution's default name as the recommended option and allow a custom name:
+**Always use `AskUserQuestion` to ask for the project name before touching any files.** Never assume the default — always present it as an option and wait for explicit confirmation.
 
 ```
 AskUserQuestion:
   question: "What should the Foundry LLM project be named for <Customer>?"
-  header: "Project Name"
+  header: "Project name"
   options:
     - label: "<Default Solution Name> (Recommended)"
       description: "Use the standard default project name for this solution"
@@ -29,9 +29,9 @@ AskUserQuestion:
       description: "I'll type a custom project name below"
 ```
 
-The calling SKILL provides the default name (e.g., `NBA Engagement Scores`, `Custom Analytics Agent`). Convention for custom names: `<Customer> <Solution Name>` (e.g., `ACME Analytics Agent`). Avoid the `TD-Managed:` prefix — that's reserved for platform-provisioned projects.
+The calling SKILL provides the default name (e.g., `NBA Engagement Scores`, `MTA Journey Analysis`). Convention for custom names: `<Customer> <Solution Name>` (e.g., `ACME MTA Journey Analysis`). Avoid the `TD-Managed:` prefix — that's reserved for platform-provisioned projects.
 
-Record the exact project name confirmed by the user.
+Record the exact project name confirmed by the user. Use it in Step 3 (tdx.json) and Step 5 (project create).
 
 ## Step 2: Clone the Template
 
