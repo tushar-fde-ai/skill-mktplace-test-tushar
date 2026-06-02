@@ -21,7 +21,7 @@ Read `../shared/SKILL.md` — it defines the entry point (new vs. resume), the p
 | Phase 3 | Push minimal workflow, validate output tables |
 | Phase 4 | Deploy Foundry agent, run integration check |
 | Phase 5 | Re-configure workflow from filled requirements, re-validate |
-| Phase 6 | Write customer-facing documentation set |
+| Phase 6 | Parent Segment update + example audiences, then customer-facing documentation set |
 
 ---
 
@@ -117,6 +117,11 @@ Re-run the workflow and re-validate output tables (same checks as Phase 3).
 
 ### Phase 6: Customer Documentation
 
+**Step 1 — Parent Segment attributes + example audiences.**
+Read `../shared/parent_segment_update.md` for the process.
+Read `prod-docs/references/parent_segment.md` for the NBA-specific attribute columns and example segment definitions. Do not read this file until the user has approved the plan.
+
+**Step 2+ — Confluence documentation pages.**
 Read `../shared/customer_docs_pattern.md` for the 5-page set.
 
 NBA-specific content for each page is in `prod-docs/references/`:

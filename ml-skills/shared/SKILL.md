@@ -18,7 +18,8 @@ Reference library of generic patterns used by every solution under `ml-skills/`.
 | `push_pattern_new_llm_project.md` | Push pattern for deploying a companion Foundry agent into a new LLM project — `tdx llm project create`, `tdx.json` setup, and `tdx agent push` (e.g., RFM Analysis Agent, NBA Insights Agent) |
 | `requirements_doc_pattern.md` | Customer-fillable Confluence page workflow + share + pause-for-customer-response pattern |
 | `test_cases_pattern.md` | Two-round test case lifecycle (TC-IDs, Confluence test cases page, `tdx agent test`, iteration loop) |
-| `customer_docs_pattern.md` | Phase 6 — the 5 standard customer-specific Confluence pages (Architecture, Behavior, Eval Results, Runbook, Access & Ownership) |
+| `parent_segment_update.md` | Phase 6 Step 1 — process for adding score attributes to the Parent Segment and creating example audience segments in Audience Studio. Handles the "how"; solution's `prod-docs/references/parent_segment.md` provides the "what". |
+| `customer_docs_pattern.md` | Phase 6 Step 2+ — the 5 standard customer-specific Confluence pages (Architecture, Behavior, Eval Results, Runbook, Access & Ownership) |
 
 ## How solutions use this
 
@@ -99,8 +100,6 @@ Read `../shared/push_pattern_td_workflows.md` for the full push flow. Read `<Sol
 
 After workflow is done running perform quick validation of expected output tables. Read `<Solution Name>/workflow-setup/references/eval.md`
 
-After validation, ask user if they want to add some attributes from the final output table to the Parent Segment and create a solution specific folder in Audience Studio with example audiences. Default name for the Audience Studio Folder should be `FDE Solutions - <Solution Name> Examples`. Agent should always tell the user which Parent Segment and which Folder it plans to setup the example audiences in and give them a choice to approve or change if needed.
-
 After validation, update **Current Project State**: Phase 3 complete, project name, push date.
 
 ### Phase 4: Minimal Agent Setup and Validation
@@ -129,9 +128,14 @@ Solution-specific updates:
 
 ### Phase 6: Customer-Specific Documentation
 
-Read `../shared/customer_docs_pattern.md` for the 5-page set + create order + keep-current rules.
-
 If resuming in a new session, **first read Current Project State**.
+
+**Step 1 — Parent Segment attributes + example audiences.**
+Read `../shared/parent_segment_update.md` for the process (approval gates, push mechanics, `attributes:` placement rules).
+Read the solution's `prod-docs/references/parent_segment.md` for the "what" (which attribute columns and which example segments to create). Do not read this file until the user has approved the plan in Step 1 of `parent_segment_update.md`.
+
+**Step 2+ — Confluence documentation pages.**
+Read `../shared/customer_docs_pattern.md` for the 5-page set + create order + keep-current rules.
 
 Analytics-specific page content: see `prod-docs/references/` (TODO).
 
