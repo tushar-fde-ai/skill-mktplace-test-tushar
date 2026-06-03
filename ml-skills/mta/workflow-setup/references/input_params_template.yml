@@ -25,7 +25,8 @@ top_k_channel_perc: 0.01                      #in case your data contains a lot 
 top_k_conv_perc: 0.01                         #in case your data contains a lot of different channels, this will only use the top_k DISTINCT values by SUM(total_conv) and change all others to 'others'
 top_k_journeys: 50                            #when creating 'mta_top_conversion_journeys' table it will bring top_k distinct touchpoint patterns for converted and non-converted journeys
 sample_tpoint_limit: 25                       #controls journey length of the samples tables we're extracting from src_union and all the journey tables for easy review and analysis
-journey_steps_lookback: 20                    #takes the first and last-n touchpoints from each journey (ex. if set to 10 and a journey has 15 touchpoints it will take step 1 and steps 6-15)\
+journey_steps_lookback: 20                    #takes the first and last-n touchpoints from each journey (ex. if set to 10 and a journey has 15 touchpoints it will take step 1 and steps 6-15)
+max_journey_days: 180                         #Lookback days from conversion event tstamp. Determines what touchpoints should be included in each converted journey based on tstamp.
 agg_analysis_cols: ["event_context", "channel"]
 summary_table_top_k: 20                       #top-k of distinct values to include in src_table_summary JSONs of stats
 
