@@ -55,7 +55,7 @@ For each activity table in bucket 1, ask: *does this event reflect a customer ch
 | Loyalty activity, app sessions, survey responses | Derived / aggregated tables (already rolled up) |
 
 **Step 4 — Present the recommended list to the user before proceeding.**
-Show a table of ALL activity tables found with your recommendation (include / exclude) and a one-line reason for each. Ask the user to confirm or adjust before locking in the source table list. Do not skip this step.
+Show a table of ALL activity tables found with your recommendation (include / exclude) and a one-line reason for each. Use the `AskUserQuestion` tool to present the confirmation — never as a plain text list. Provide pre-populated options (e.g. "Confirm as listed", "Exclude one or more tables") with "Other" for custom input. Do not skip this step.
 
 **Step 5 — For each confirmed source table, note down:**
 - Full table name

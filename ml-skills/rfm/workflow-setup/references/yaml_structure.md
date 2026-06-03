@@ -13,7 +13,7 @@ globals:
   canonical_id: canonical_id
 
   # Output database where results will be stored
-  sink_database: gldn_marketing
+  sink_database: td_agents
 
   # Model type - 'custom' for PS quartile code, 'automl' for PrecisionML notebook
   model_type: 'custom'
@@ -27,20 +27,11 @@ globals:
   # Store historical scores for trending analysis
   store_historic_scores: no
 
-  # Automatically build customer segments based on RFM scores
-  auto_build_segments: no
-
   # Timezone for date/time operations
   time_zone: 'UTC'
 
-  # Whether to create visualization dashboard
-  create_dashboard: 'yes'
-
   # Treasure Data API endpoint
   api_endpoint: 'api.treasuredata.com'
-
-  # Table to store model configuration history
-  model_config_table: 'datamodel_build_history'
 
   # Number of bins for histogram display (NOT scoring scale — scoring always uses quartiles 1-4)
   num_bins: 10

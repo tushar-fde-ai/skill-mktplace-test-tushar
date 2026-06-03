@@ -63,15 +63,15 @@ RFM requires tables that represent **customer interactions**. Look for:
 ### Step 3: Clone the RFM Workflow Repository
 
 ```bash
-git clone https://github.com/treasure-data-ps/ps_ml_analytics_team_solutions_prod.git
-cd ps_ml_analytics_team_solutions_prod/rfm_prod
+git clone https://github.com/treasure-data/fde-rfm.git
+cd fde-rfm/td_wf/rfm_agent
 ```
 
 See `github_instructions.md` for detailed clone and setup steps.
 
 ### Step 4: Generate the Input YAML Configuration
 
-The critical file to generate is: `rfm_prod/config/input_params.yml`
+The critical file to generate is: `td_wf/rfm_agent/config/input_params.yml`
 
 **Reference**: Read `yaml_structure.md` for the complete YAML structure.
 
@@ -80,16 +80,13 @@ The critical file to generate is: `rfm_prod/config/input_params.yml`
 ```yaml
 globals:
   canonical_id: canonical_id
-  sink_database: gldn_marketing
+  sink_database: td_agents
   model_type: 'custom'
   built_union_activity: yes
   archive_results: yes
   store_historic_scores: no
-  auto_build_segments: no
   time_zone: 'UTC'
-  create_dashboard: 'yes'
   api_endpoint: 'api.treasuredata.com'
-  model_config_table: 'datamodel_build_history'
   num_bins: 10
 ```
 
@@ -249,8 +246,8 @@ After confirmation, ask:
 ### Step 9: Deploy
 
 Once the user has confirmed both the YAML and the project name:
-1. Clone the repo: `git clone https://github.com/treasure-data-ps/ps_ml_analytics_team_solutions_prod.git`
-2. Place `input_params.yml` in `ps_ml_analytics_team_solutions_prod/rfm_prod/config/`
+1. Clone the repo: `git clone https://github.com/treasure-data/fde-rfm.git`
+2. Place `input_params.yml` in `fde-rfm/td_wf/rfm_agent/config/`
 3. Push the workflow to TD:
    - **Default name**: `cd rfm_prod && tdx wf push -y`
    - **Custom name**: `cd rfm_prod && tdx wf upload <custom_project_name>`
@@ -310,7 +307,7 @@ order_amount: 0.0
 
 The production RFM workflow code is at:
 ```
-https://github.com/treasure-data-ps/ps_ml_analytics_team_solutions_prod/tree/main/rfm_prod
+https://github.com/treasure-data/fde-rfm/tree/main/td_wf/rfm_agent
 ```
 
-After generating `input_params.yml`, place it in `rfm_prod/config/input_params.yml`.
+After generating `input_params.yml`, place it in `td_wf/rfm_agent/config/input_params.yml`.

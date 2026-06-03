@@ -4,16 +4,13 @@
 globals:
   #Define input/output database names in TD
   canonical_id: canonical_id
-  sink_database: gldn_marketing
+  sink_database: td_agents
   model_type: 'custom' #Use 'custom' to run custom PS code, use `automl` to run PrecisionML notebook
   built_union_activity: yes
   archive_results: yes
   store_historic_scores: no
-  auto_build_segments: no
   time_zone: 'UTC'
-  create_dashboard: 'yes'
   api_endpoint: 'api.treasuredata.com'
-  model_config_table: 'datamodel_build_history'
   num_bins: 10
 
 ### Output Table Params

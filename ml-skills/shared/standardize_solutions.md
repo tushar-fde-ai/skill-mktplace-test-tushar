@@ -89,5 +89,5 @@ Read `../shared/customer_docs_pattern.md` for the 5-page set.
 |---|---|---|---|---|
 | NBA Engagement Scores | ✅ Reference implementation | ✅ Reference implementation | ✅ Reference implementation | N/A (keeps PS step) |
 | MTA Journey Analytics | ✅ Done | ✅ Done | ✅ Done | ✅ Done (PS step removed) |
-| RFM | ⬜ Pending | ⬜ Pending | ⬜ Pending | N/A (keeps PS step) |
+| RFM | ✅ Done | ✅ Done | ✅ Done | N/A (keeps PS step) |
 | NBP | ⬜ Pending | ⬜ Pending | ⬜ Pending | N/A (keeps PS step) |
