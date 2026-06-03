@@ -35,6 +35,7 @@ top_k_conv_perc: 0.01                        # Collapse low-conversion channels 
 top_k_journeys: 50                           # Top distinct conversion journeys to extract
 sample_tpoint_limit: 25                      # Max touchpoints per sample journey
 journey_steps_lookback: 20                   # First/last-N touchpoints per journey
+max_journey_days: 180                        #Max number of days to lookback from conversion event
 agg_analysis_cols: ["event_context", "channel"]  # Columns for aggregation analysis
 summary_table_top_k: 20                      # Top-K distinct values for summary stats
 
