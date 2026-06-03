@@ -194,16 +194,16 @@ Audience-specific Phase 3 sequence (overrides the generic shared flow):
    - Full category details + example prompts: `agent-setup/references/eval.md`
    - Use the inference bundle's real column names + sampled values to write concrete test prompts.
 
-4. **Create the Confluence test cases page** + mirror cases into local `test.yml` per `../shared/test_cases_pattern.md`.
+4. **Create the Confluence test cases page (internal) AND the customer-facing Google Sheet** + mirror cases into local `test.yml`. Both surfaces live side-by-side throughout — Confluence is canonical, Sheet is a customer-friendly subset (no internal pass criteria). See `../shared/test_cases_pattern.md` Step 2 + Step 2b.
 
 5. **Test-run confirmation gate.** Do NOT auto-run `tdx agent test`. Present the test cases to the FDE engineer:
    > Here are the 10-15 test cases I've generated. Review them at the Confluence page: <URL>. Reply 'run' when you're ready for me to execute `tdx agent test`.
    
    Wait for explicit approval. The FDE engineer may edit cases before approval — re-read `test.yml` if so.
 
-6. **Run `tdx agent test`** only after explicit approval. Update Round 1 Result column on the Confluence page via `updateConfluencePage`.
+6. **Run `tdx agent test`** only after explicit approval. Update **both** Round 1 Result columns: full-page replace on Confluence via `updateConfluencePage`, and write the same column into the customer-facing Sheet. Share the Sheet view-only with the customer's email(s) (first run only — subsequent rounds just refresh cells).
 
-7. **Update Current Project State** at end of Phase 3: test cases page URL, Round 1 pass rate, failing TC-IDs.
+7. **Update Current Project State** at end of Phase 3: Confluence test cases page URL, customer-facing Google Sheet URL, Round 1 pass rate, failing TC-IDs.
 
 ### Phase 4: Customer Edits Returned + Round 2
 

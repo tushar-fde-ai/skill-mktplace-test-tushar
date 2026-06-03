@@ -11,7 +11,7 @@ The 5-page set, create order, and keep-current rules live in `../../shared/custo
 ## Prerequisites
 
 - All Phase 4 (Round 2 testing) work complete
-- Current Project State page contains: solution folder ID, project name, requirements doc URL, test cases page URL
+- Current Project State page contains: solution folder ID, project name, requirements doc URL, Confluence test cases page URL, customer-facing Google Sheet URL
 - Local KBs reflect the customer's final state — `Read` them before authoring the Behavior page:
   - `knowledge_bases/business_context.md`
   - `knowledge_bases/data_dictionary.md`
@@ -61,7 +61,8 @@ Customer stakeholders read this to understand what their agent does. Plain Engli
 Title: `Analytics Agent Eval Results - <Customer>`
 
 Content:
-- Link to `Analytics Agent Test Cases - <Customer>` page
+- Link to `Analytics Agent Test Cases - <Customer>` Confluence page (internal)
+- Link to the customer-facing Google Sheet
 - Round 2 final pass rate (X / N = Z%)
 - List of TC-IDs that still fail and why (known limitations)
 - Date of last `tdx agent test` run

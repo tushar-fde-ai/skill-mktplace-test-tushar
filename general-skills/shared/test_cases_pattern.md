@@ -1,12 +1,23 @@
 ---
 name: shared-test-cases-pattern
 description: |
-  Reusable two-round test case lifecycle for FDE solutions. Covers TC-ID convention, Confluence test cases page, test.yml, Round 1 (empty context) → Round 2 (post customer requirements), updateConfluencePage mechanics, and iteration loop. Used by every solution under general-skills/.
+  Reusable two-round test case lifecycle for FDE solutions. Covers TC-ID convention, Confluence test cases page (internal), customer-facing Google Sheet, test.yml, Round 1 (empty context) → Round 2 (post customer requirements), updateConfluencePage + Sheets-API sync mechanics, and iteration loop. Used by every solution under general-skills/.
 ---
 
 # Shared: Test Cases Pattern
 
 Every FDE agent solution validates its deployment with a graded set of test cases run twice — once on the freshly-pushed empty agent (Round 1), once after the customer requirements doc is incorporated (Round 2).
+
+## Two surfaces — internal vs customer
+
+| Surface | Audience | Columns | Source of truth |
+|---|---|---|---|
+| **Confluence test cases page** | FDE team (internal) | TC-ID, Category, Complexity, Prompt, Expected Behavior, Pass Criteria, Round 1 Result, Round 2 Result, Notes (full failure-to-fix detail) | Yes |
+| **Google Sheet** | Customer (external) | TC-ID, Category, Prompt, Round 1 Result, Round 2 Result | Mirror of Confluence — never edited directly |
+
+Both are updated by the LLM in the same step after every `tdx agent test` run. Confluence stays canonical; the Sheet is a customer-friendly subset (no internal pass criteria, no failure-pattern jargon).
+
+**Sheet ownership:** FDE-owned Drive folder. Customer gets a view-only share link. The Sheet first goes to the customer **after Round 1** (Phase 3) — they watch progress through Round 2 in the same artifact.
 
 ## TC-ID Convention
 
@@ -37,7 +48,7 @@ The calling SKILL provides the categories and example prompts. Generate 10-15 ca
 |---|---|---|---|---|---|---|---|---|
 | TC-001 | <category> | <simple/medium/complex> | <prompt> | <what should happen> | <what to check in response> | | | |
 
-## Step 2: Create the Confluence Test Cases Page
+## Step 2: Create the Confluence Test Cases Page (internal)
 
 Title: `<solution> Test Cases - <Customer>`
 
@@ -54,6 +65,7 @@ createConfluencePage:
     **Project:** <project name>
     **Round 1 run date:** <date>
     **Round 2 run date:** <date or "pending">
+    **Customer-facing Sheet:** <Google Sheet URL>
 
     ## Summary
 
@@ -69,6 +81,25 @@ createConfluencePage:
     | TC-001 | ... | ... | ... | ... | ... | ✅/❌ | ✅/❌ | ... |
     | ...
 ```
+
+## Step 2b: Create the Customer-Facing Google Sheet
+
+Create the Sheet at the same time as the Confluence page (before Round 1 runs). FDE-owned Drive folder; pattern: `FDE Engagements/<Customer>/<solution> Test Cases - <Customer>`.
+
+```
+mcp__work__google_drive_upload (or google_sheets equivalent):
+  parent_folder: <FDE engagements folder ID>
+  name: "<solution> Test Cases - <Customer>"
+  type: spreadsheet
+```
+
+Populate columns (customer-friendly subset only — no internal pass criteria, no failure-to-fix mappings):
+
+| TC-ID | Category | Test Prompt | Round 1 Result | Round 2 Result |
+|---|---|---|---|---|
+| TC-001 | ... | ... | (blank until Round 1) | (blank until Round 2) |
+
+Share view-only with the customer's email(s) once Round 1 has run (Step 4). Record the Sheet URL on the Confluence page (top of body) AND on **Current Project State**.
 
 ## Step 3: Mirror to test.yml
 
@@ -97,7 +128,9 @@ cd agents/<project-dir>
 tdx agent test
 ```
 
-Parse pass/fail from output. Then full-page-replace the Confluence test cases page via `updateConfluencePage`:
+Parse pass/fail from output. Then update **both surfaces in the same step**:
+
+1. **Confluence** — full-page replace via `updateConfluencePage` with the Round 1 Result column filled:
 
 ```
 updateConfluencePage:
@@ -105,12 +138,14 @@ updateConfluencePage:
   pageId: <test_cases_page_id>
   title: "<solution> Test Cases - <Customer>"
   contentFormat: markdown
-  body: <updated table with Round 1 Result column filled>
+  body: <updated table with Round 1 Result column filled + Sheet URL at top>
 ```
+
+2. **Google Sheet** — write the Round 1 Result column into the customer-facing Sheet (same TC-ID order). Confluence is canonical; the Sheet is a mirror — never the other way around. After writing, share view-only with the customer's email(s) (first time only — subsequent rounds just refresh the cells).
 
 (Confluence updates are full-page replaces — render the entire markdown body again with the new column populated.)
 
-Update **Current Project State**: test cases page URL, Round 1 pass rate, failing TC-IDs.
+Update **Current Project State**: Confluence test cases page URL, **customer-facing Sheet URL**, Round 1 pass rate, failing TC-IDs.
 
 **Round 1 expectations depend on the calling SKILL.** If the SKILL writes a thoroughly pre-populated `business_context.md` (or equivalent KB) before Round 1 — like the audience-agent's Phase 1 inference bundle — failures should be narrow (true business gaps, edge cases). If the SKILL leaves the KB empty for Round 1, expect broader failures that customer answers will close.
 
@@ -128,7 +163,11 @@ After explicit approval:
 tdx agent test
 ```
 
-`updateConfluencePage` again — fill the Round 2 Result column. For any case still failing, the calling SKILL's `eval.md` provides a "failure pattern → fix location" table.
+Update **both surfaces** (same as Step 4 — Confluence canonical, Sheet mirror):
+- `updateConfluencePage` to fill the Round 2 Result column
+- Write Round 2 Result column into the customer-facing Sheet
+
+For any case still failing, the calling SKILL's `eval.md` provides a "failure pattern → fix location" table.
 
 After each fix:
 
@@ -136,6 +175,8 @@ After each fix:
 tdx agent push -y
 tdx agent test
 ```
+
+(Same dual-update on both surfaces after every retest.)
 
 Stop when pass rate is acceptable for the customer's tolerance. Document remaining failures as known limitations on the Phase 6 Eval Results page.
 

@@ -43,7 +43,8 @@ createConfluencePage:
 
     ## Artifact URLs
     - Requirements doc: <pending or URL>
-    - Test cases page: <pending or URL>
+    - Test cases page (Confluence — internal): <pending or URL>
+    - Test cases sheet (Google Sheet — customer-facing): <pending or URL>
     - Architecture: <pending or URL>
     - Behavior summary: <pending or URL>
     - Eval Results: <pending or URL>
@@ -76,6 +77,6 @@ updateConfluencePage:
 |---|---|
 | Phase 1d (requirements doc published) | Current phase → 2, Requirements doc URL, customer notification date in Key Decisions |
 | Phase 2 push | Current phase → 3, project name + push date in Key Decisions |
-| Phase 3 Round 1 tests | Current phase → 4 (waiting on customer), Test cases page URL, Round 1 pass rate, failing TC-IDs |
+| Phase 3 Round 1 tests | Current phase → 4 (waiting on customer), Test cases Confluence URL + Google Sheet URL, Round 1 pass rate, failing TC-IDs |
 | Phase 4 Round 2 tests | Current phase → 5, Round 2 pass rate, remaining limitations |
 | Phase 5 docs | Current phase → "complete — engagement live", all 5 doc URLs populated |
