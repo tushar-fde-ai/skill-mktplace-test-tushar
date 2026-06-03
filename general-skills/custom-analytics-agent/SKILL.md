@@ -17,7 +17,7 @@ Unlike the audience agent (which customizes an existing `TD-Managed: <Parent Seg
 ## Template Repo
 
 ```
-https://github.com/treasure-data-ps/analytics-agent-template
+https://github.com/treasure-data/fde-custom-analytics-agent
 ```
 
 The template ships with:
@@ -145,7 +145,7 @@ Read `../shared/push_pattern_fresh_project.md` for the full push flow (clone, se
 **Important — file edit ordering:** apply the analytics-specific file edits in `agent-setup/SKILL.md` **between Step 3 (set tdx.json) and Step 6 (push) of the shared push pattern.**
 
 Audience-specific:
-- Template repo: `https://github.com/treasure-data-ps/analytics-agent-template`
+- Template repo: `https://github.com/treasure-data/fde-custom-analytics-agent`
 - Don't write the inference bundle to the 3 customer KBs yet — that happens in Phase 3 after Phase 1d has shared the doc with the customer. Phase 2 just pushes the template with shipped stub KBs.
 - No `rm -rf` step (fresh project, no read-only platform agents)
 

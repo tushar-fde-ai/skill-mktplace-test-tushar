@@ -20,15 +20,27 @@ Ask the user for the project name. Convention: `<Customer> <Solution Name>` (e.g
 
 Record the exact project name.
 
-## Step 2: Clone the Template
+## Step 2: Clone the Template + Create Customer Branch
 
-The calling SKILL provides the template repo URL. Clone, then `cd` into the project directory under `agents/`:
+The calling SKILL provides the template repo URL. Clone, create the customer branch, then `cd` into the project directory under `agents/`:
 
 ```bash
 git clone <template-repo-url>
-cd <repo-name>/agents
+cd <repo-name>
+git checkout -b customer/<slug>
+cd agents
 cd "$(ls -d */ | head -n 1)"
 ```
+
+The `<slug>` is auto-derived from the customer name. See `customer_branch_pattern.md` for slug rules + branch lifecycle. The customer branch is the long-lived deployed-state-of-record — every Phase 2/3/4 edit lands as a commit here.
+
+After Step 6 push, push the branch to origin:
+
+```bash
+git push -u origin customer/<slug>
+```
+
+Record the customer branch URL on **Current Project State** under Artifact URLs.
 
 ## Step 3: Set tdx.json
 
@@ -62,6 +74,23 @@ No `rm -rf` step — there are no read-only platform agents in a fresh project.
 
 Ask the user to verify in the TD UI that the project exists and the agent + integration surfaced as expected.
 
-## Re-Pushing Later (Phase 5 / iterations)
+## Re-Pushing Later (Phase 3 distill / Phase 4 / iterations)
 
-The project already exists, so skip Step 5. Just `tdx agent push -y` from the project directory.
+Later sessions resume on the customer branch. First action: read `Current Project State` to recover the branch URL, then:
+
+```bash
+git fetch origin
+git checkout customer/<slug>
+git pull
+```
+
+The project already exists, so skip Step 5. Make edits, then:
+
+```bash
+# ... edit KBs / prompt.md per phase ...
+git commit -am "Phase <N>: <one-line summary>"
+git push
+tdx agent push -y
+```
+
+See `customer_branch_pattern.md` for the per-phase commit message conventions and what to commit / .gitignore.

@@ -16,6 +16,7 @@ Reference library of generic patterns used by every solution under `general-skil
 | `current_project_state.md` | The cross-session context store concept — `Current Project State - <Customer>` Confluence page format and update rules |
 | `push_pattern_td_managed.md` | Push pattern for solutions that customize an existing `TD-Managed: <Parent Segment>` project (e.g., custom-audience-agent) |
 | `push_pattern_fresh_project.md` | Push pattern for solutions that create a new LLM project from scratch (e.g., custom-analytics-agent) |
+| `customer_branch_pattern.md` | Per-customer `customer/<slug>` branch convention for template repos — slug derivation, branch lifecycle (Phase 2 create → Phase 3 distill → Phase 4 re-distill → iteration loop), commit message conventions, what to commit / .gitignore |
 | `requirements_doc_pattern.md` | Customer-fillable Confluence page workflow + share + pause-for-customer-response pattern |
 | `test_cases_pattern.md` | Two-round test case lifecycle (TC-IDs, Confluence test cases page, customer-facing Google Sheet, `tdx agent test`, iteration loop) |
 | `audience_studio_segments.md` | Generic process for pushing segments to Audience Studio — test-segment dumps from `tdx agent test` runs (`FDE Test - <Customer>` folder) and customer-facing demo segments (`FDE Solutions - <Solution> Examples`). Approval gates, naming, JSON→YAML conversion, overwrite-by-name behavior. |

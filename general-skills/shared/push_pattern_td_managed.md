@@ -29,15 +29,27 @@ tdx llm project list 2>&1 | grep -i "TD-Managed:" || echo "COMMAND_NOT_FOUND"
 
 Record the exact project name (e.g., `TD-Managed: Ecommerce Audience`).
 
-## Step 2: Clone the Template
+## Step 2: Clone the Template + Create Customer Branch
 
-The calling SKILL provides the template repo URL. Clone, then `cd` into the (single) project directory under `agents/`:
+The calling SKILL provides the template repo URL. Clone, create the customer branch, then `cd` into the (single) project directory under `agents/`:
 
 ```bash
 git clone <template-repo-url>
-cd <repo-name>/agents
+cd <repo-name>
+git checkout -b customer/<slug>
+cd agents
 cd "$(ls -d */ | head -n 1)"   # there's only one project dir; future-proofs against template renames
 ```
+
+The `<slug>` is auto-derived from the customer name. See `customer_branch_pattern.md` for slug rules + branch lifecycle. The customer branch is the long-lived deployed-state-of-record — every Phase 2/3/4 edit lands as a commit here.
+
+After Step 6 push, push the branch to origin:
+
+```bash
+git push -u origin customer/<slug>
+```
+
+Record the customer branch URL on **Current Project State** under Artifact URLs.
 
 ## Step 3: Set tdx.json
 
@@ -73,11 +85,24 @@ tdx agent push -y
 
 Ask the user to verify in the TD UI that the chat integration surfaces the new custom agent prompt.
 
-## Re-Pushing Later (Phase 5 / iterations)
+## Re-Pushing Later (Phase 3 distill / Phase 4 / iterations)
 
-A later session may have re-cloned or `git pull`-ed and reintroduced the `TD-Managed: *` directories. Always re-confirm Steps 4 + 5 before re-pushing:
+Later sessions resume on the customer branch. First action: read `Current Project State` to recover the branch URL, then:
+
+```bash
+git fetch origin
+git checkout customer/<slug>
+git pull
+```
+
+A re-cloned environment may have reintroduced the `TD-Managed: *` directories — always re-confirm Steps 4 + 5 before re-pushing:
 
 ```bash
 rm -rf "TD-Managed: Marketing Copilot" "TD-Managed: Data Source Finder" "TD-Managed: Questions Suggester"
+# ... edit KBs / prompt.md per phase ...
+git commit -am "Phase <N>: <one-line summary>"
+git push
 tdx agent push -y
 ```
+
+See `customer_branch_pattern.md` for the per-phase commit message conventions and what to commit / .gitignore.

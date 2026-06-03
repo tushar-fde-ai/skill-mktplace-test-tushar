@@ -28,7 +28,7 @@ The legacy `get_segment_draft_rules` knowledge base + tool was a gpt-only workar
 ## Template Repo
 
 ```
-https://github.com/treasure-data-ps/custom-audience-agent
+https://github.com/treasure-data/fde-custom-audience-agent
 ```
 
 ## Solution-specific configuration
@@ -161,7 +161,7 @@ Read `../shared/push_pattern_td_managed.md` for the full push flow. Read `agent-
 **Important — file edit ordering:** the audience-specific file edits in `agent-setup/SKILL.md` must be applied **between Step 3 (set tdx.json) and Step 5 (delete TD-Managed dirs) of the shared push pattern**. Specifically: flip `model: gpt-4.1` → `model: claude-4.5-sonnet` in all three Custom + Clone `agent.yml` files; remove the `get_segment_draft_rules` tool entry from `Custom Audience Agent/agent.yml`; edit `Custom Audience Agent/prompt.md` per the (a)/(b)/(c) instructions; delete `knowledge_bases/get_segment_draft_rules.md`. **Without this ordering, the FDE engineer risks pushing gpt-4.1 agents to the customer.**
 
 Audience-specific:
-- Template repo: `https://github.com/treasure-data-ps/custom-audience-agent`
+- Template repo: `https://github.com/treasure-data/fde-custom-audience-agent`
 - Don't write the inference bundle to `business_context.md` yet — that happens in Phase 3 after Phase 1d has shared the doc with the customer. Phase 2 just pushes the template with the shipped placeholder.
 - Integration check substring: `name: "Custom Audience Agent"`
 - Read-only dirs to delete: `TD-Managed: Marketing Copilot`, `TD-Managed: Data Source Finder`, `TD-Managed: Questions Suggester`
