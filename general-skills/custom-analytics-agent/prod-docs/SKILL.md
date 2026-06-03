@@ -23,7 +23,7 @@ All Confluence page titles use the convention `<Base name> - <Customer>` (regula
 
 ### 1. Architecture
 
-Title: `Analytics Agent Architecture - <Customer>`
+Title: `[CUST-FACING] Analytics Agent Architecture - <Customer>`
 
 Content:
 - Target project: `<Customer> Analytics Agent` (fresh LLM project, not bound to a TD-Managed parent segment)
@@ -58,7 +58,7 @@ Customer stakeholders read this to understand what their agent does. Plain Engli
 
 ### 3. Eval Results
 
-Title: `Analytics Agent Eval Results - <Customer>`
+Title: `[CUST-FACING] Analytics Agent Eval Results - <Customer>`
 
 Content:
 - Link to `Analytics Agent Test Cases - <Customer>` Confluence page (internal)

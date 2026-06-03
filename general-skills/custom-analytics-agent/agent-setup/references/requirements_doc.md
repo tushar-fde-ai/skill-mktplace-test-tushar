@@ -15,7 +15,7 @@ Distillation rules mirror the audience agent's `business_context_template.md` �
 
 ## Page title
 
-`Analytics Agent Requirements - <Customer>` (every Confluence page title must be suffixed with the customer name — Confluence enforces unique titles per space)
+`[CUST-FACING] Analytics Agent Requirements - <Customer>` (every Confluence page title must be suffixed with the customer name — Confluence enforces unique titles per space; the `[CUST-FACING]` prefix marks pages the customer is meant to read — see `../../../shared/customer_docs_pattern.md`)
 
 ## Inference markers
 
@@ -52,7 +52,7 @@ Use the canonical full example as a reference when rendering: [Audience Agent Re
 Use this body when calling `createConfluencePage` (everything between the outer ```` ``` ```` lines below — peel the wrapper off when passing to the API):
 
 ````markdown
-# Analytics Agent Requirements - <Customer>
+# [CUST-FACING] Analytics Agent Requirements - <Customer>
 
 **Purpose:** Help us tailor the Custom Analytics Agent to your business. Answers below were drafted from `<database>` ([N tables]) — please review, correct, or expand.
 

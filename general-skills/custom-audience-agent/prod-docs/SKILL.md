@@ -11,8 +11,9 @@ The 5-page set, create order, and keep-current rules live in `../../shared/custo
 ## Prerequisites
 
 - All Phase 4 (Round 2 testing) work complete
-- Current Project State page contains: solution folder ID, project name, requirements doc URL, Confluence test cases page URL, customer-facing Google Sheet URL
+- Current Project State page contains: solution folder ID, project name, requirements doc URL, Confluence test cases page URL, customer-facing Google Sheet URL, **`FDE Test - <Customer>` folder name**, **demo segments folder + URLs (created in Phase 5 Step 5.0)**
 - Local `knowledge_bases/business_context.md` (and optionally `sql_templates.md`) reflects the customer's final state — `Read` these before authoring the Behavior page
+- **Demo segments pushed to `FDE Solutions - Audience Agent Examples`** (Phase 5 Step 5.0 in the audience-agent SKILL — read `references/audience_studio.md` + `../../shared/audience_studio_segments.md` if not done yet)
 
 ## Page Content
 
@@ -20,7 +21,7 @@ All Confluence page titles use the convention `<Base name> - <Customer>` (regula
 
 ### 1. Architecture
 
-Title: `Audience Agent Architecture - <Customer>`
+Title: `[CUST-FACING] Audience Agent Architecture - <Customer>`
 
 Content:
 - Target project: `TD-Managed: <Parent Segment Name>`
@@ -37,6 +38,7 @@ Content:
   - `sql_templates.md` *(only if customer provided in requirements §9)*
 - Chat integration: widget label + welcome message from `chat_parent_segment.yml`
 - Model: `claude-4.5-sonnet`, temperature: `0`
+- **Example segments the agent can produce** — link the demo segments pushed in Phase 5 Step 5.0 (folder: `FDE Solutions - Audience Agent Examples`). Each demo URL with a 1-line description.
 
 ### 2. Customer-Specific Behavior Summary
 
@@ -46,8 +48,8 @@ Plain-English narrative pulled from `business_context.md`. Sections:
 
 - **Business Model** — what the customer sells, channels (from §1)
 - **Business KPIs the Agent Optimizes For** (from §2)
-- **Business Terms the Agent Recognizes** — list each term + definition (from §3). E.g., "VIP = Tier 3+ loyalty members"
-- **Priority Attributes** — table of column → business meaning (from §4)
+- **Business Terms the Agent Recognizes** — list each term + definition (from §3). E.g., "VIP = Tier 3+ loyalty members". Where a demo segment exercises a term, link the demo URL inline.
+- **Priority Attributes** — table of column → business meaning (from §4). Where a demo segment uses an attribute, link the demo URL inline.
 - **Segment Naming Conventions** — patterns the agent follows when drafting (from §5)
 - **What the Agent Excludes by Default** — PII columns, customer filters, hidden behavior tables (from §6)
 - **Custom SQL Templates** *(if applicable — from §9)* — list each template name + when used
@@ -56,7 +58,7 @@ Customer stakeholders read this to understand what their agent does. Plain Engli
 
 ### 3. Eval Results
 
-Title: `Audience Agent Eval Results - <Customer>`
+Title: `[CUST-FACING] Audience Agent Eval Results - <Customer>`
 
 Content:
 - Link to `Audience Agent Test Cases - <Customer>` Confluence page (internal)

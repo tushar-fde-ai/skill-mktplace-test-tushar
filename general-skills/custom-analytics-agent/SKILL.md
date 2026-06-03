@@ -128,7 +128,7 @@ Single-step gate: when the engineer approves in 1c, publish immediately. No re-s
    - `Custom Analytics Agent - <Customer>` sub-folder ← `parentId` for all subsequent FDE pages
 2. **Create the Current Project State page** per `../shared/current_project_state.md` (`Current Project State - <Customer>`).
 3. **Publish the first-draft requirements doc** per `../shared/requirements_doc_pattern.md`:
-   - Page title: `Analytics Agent Requirements - <Customer>` (Confluence enforces unique titles per space — suffixing is mandatory)
+   - Page title: `[CUST-FACING] Analytics Agent Requirements - <Customer>` (Confluence enforces unique titles per space — suffixing is mandatory; the `[CUST-FACING]` prefix marks pages the customer is meant to read — see `../shared/customer_docs_pattern.md`)
    - Body: the engineer-confirmed Phase 1c rendered body. See `agent-setup/references/requirements_doc.md` for the body template.
 4. **Update Current Project State**: Phase 1 complete, requirements doc URL, customer notification date.
 5. **Hand the URL to the FDE engineer** to share with the customer.

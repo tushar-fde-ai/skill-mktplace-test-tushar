@@ -16,9 +16,9 @@ Phase 6, after Round 2 testing passes.
 
 - Solution folder parentId (from `confluence_folder_setup.md`, recorded in Current Project State)
 - Pages already in the folder from earlier phases:
-  - `Current Project State - <Customer>`
-  - `<solution> Requirements - <Customer>`
-  - `<solution> Test Cases - <Customer>`
+  - `Current Project State - <Customer>` (internal)
+  - `[CUST-FACING] <solution> Requirements - <Customer>`
+  - `<solution> Test Cases - <Customer>` (internal — customer sees the Google Sheet mirror instead)
 
 If resuming in a new session, **first action: read `Current Project State`** via `searchConfluenceUsingCql` to recover the project name, folder parentId, and URLs of the requirements doc and test cases page.
 
@@ -34,11 +34,18 @@ parentId: <solution_folder_page_id>
 contentFormat: markdown
 ```
 
-**Page title convention:** every title below uses the format `<Base name> - <Customer>` (regular hyphen, single spaces, customer-name suffixed). Suffixing is mandatory — Confluence enforces unique titles per space.
+**Page title convention:** every title uses the format `<Base name> - <Customer>` (regular hyphen, single spaces, customer-name suffixed). Suffixing is mandatory — Confluence enforces unique titles per space.
+
+**Customer-facing prefix.** Three pages in the engagement are customer-facing and get a `[CUST-FACING]` prefix:
+- `[CUST-FACING] <solution> Requirements - <Customer>` (Phase 1d)
+- `[CUST-FACING] <solution> Architecture - <Customer>` (Phase 5)
+- `[CUST-FACING] <solution> Eval Results - <Customer>` (Phase 5)
+
+The remaining pages — Test Cases, Behavior, Runbook, Access & Ownership, Current Project State — stay internal-only (no prefix). The prefix signals which pages the customer is meant to read; it doesn't change Confluence permissions, so the parent solution folder should be share-link-ready but customers are directed to the prefixed pages by name. Internal pages remain visible if the customer navigates the folder, but their absence of prefix makes the intent clear.
 
 ### 1. Architecture
 
-Title: `<solution> Architecture - <Customer>`
+Title: `[CUST-FACING] <solution> Architecture - <Customer>`
 
 Content (calling SKILL provides specifics):
 - Target project name (TD-Managed or fresh)
@@ -56,7 +63,7 @@ Plain-English narrative of what the agent knows for THIS customer. Pulled from t
 
 ### 3. Eval Results
 
-Title: `<solution> Eval Results - <Customer>`
+Title: `[CUST-FACING] <solution> Eval Results - <Customer>`
 
 Content:
 - Link to the test cases page

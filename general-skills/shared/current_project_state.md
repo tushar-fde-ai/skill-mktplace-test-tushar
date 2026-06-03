@@ -45,6 +45,8 @@ createConfluencePage:
     - Requirements doc: <pending or URL>
     - Test cases page (Confluence — internal): <pending or URL>
     - Test cases sheet (Google Sheet — customer-facing): <pending or URL>
+    - Test segments folder (Audience Studio — internal): <pending or `FDE Test - <Customer>`>
+    - Demo segments folder (Audience Studio — customer-facing): <pending or `FDE Solutions - <Solution> Examples` + per-segment URLs>
     - Architecture: <pending or URL>
     - Behavior summary: <pending or URL>
     - Eval Results: <pending or URL>
@@ -77,6 +79,6 @@ updateConfluencePage:
 |---|---|
 | Phase 1d (requirements doc published) | Current phase → 2, Requirements doc URL, customer notification date in Key Decisions |
 | Phase 2 push | Current phase → 3, project name + push date in Key Decisions |
-| Phase 3 Round 1 tests | Current phase → 4 (waiting on customer), Test cases Confluence URL + Google Sheet URL, Round 1 pass rate, failing TC-IDs |
-| Phase 4 Round 2 tests | Current phase → 5, Round 2 pass rate, remaining limitations |
-| Phase 5 docs | Current phase → "complete — engagement live", all 5 doc URLs populated |
+| Phase 3 Round 1 tests | Current phase → 4 (waiting on customer), Test cases Confluence URL + Google Sheet URL, **`FDE Test - <Customer>` folder name** (if solution dumps test segments), Round 1 pass rate, failing TC-IDs |
+| Phase 4 Round 2 tests | Current phase → 5, Round 2 pass rate, remaining limitations (test segments folder unchanged — overwrite-by-name) |
+| Phase 5 docs | Current phase → "complete — engagement live", all 5 doc URLs populated, **demo segments folder + per-segment URLs** (if solution creates demos) |

@@ -144,7 +144,7 @@ Single-step gate: when the engineer approves in 1c, publish immediately. No re-s
    - `Custom Audience Agent - <Customer>` sub-folder ← `parentId` for all subsequent FDE pages
 2. **Create the Current Project State page** per `../shared/current_project_state.md` (`Current Project State - <Customer>`).
 3. **Publish the first-draft requirements doc** per `../shared/requirements_doc_pattern.md`:
-   - Page title: `Audience Agent Requirements - <Customer>` (Confluence enforces unique titles per space — suffixing is mandatory)
+   - Page title: `[CUST-FACING] Audience Agent Requirements - <Customer>` (Confluence enforces unique titles per space — suffixing is mandatory; the `[CUST-FACING]` prefix marks pages the customer is meant to read — see `../shared/customer_docs_pattern.md`)
    - Body: the engineer-confirmed Phase 1c rendered body (all 9 sections, customer-facing markers intact). See `agent-setup/references/requirements_doc.md` for the body template + canonical example: https://treasure-data.atlassian.net/wiki/spaces/CUST/pages/4981719206/
 4. **Update Current Project State**: Phase 1 complete, requirements doc URL, customer notification date.
 5. **Hand the URL to the FDE engineer** to share with the customer.
@@ -203,7 +203,9 @@ Audience-specific Phase 3 sequence (overrides the generic shared flow):
 
 6. **Run `tdx agent test`** only after explicit approval. Update **both** Round 1 Result columns: full-page replace on Confluence via `updateConfluencePage`, and write the same column into the customer-facing Sheet. Share the Sheet view-only with the customer's email(s) (first run only — subsequent rounds just refresh cells).
 
-7. **Update Current Project State** at end of Phase 3: Confluence test cases page URL, customer-facing Google Sheet URL, Round 1 pass rate, failing TC-IDs.
+6b. **Dump test segments to Audience Studio.** For every TC that produced a `:segment:` JSON output, push to the `FDE Test - <Customer>` folder. Read `../shared/audience_studio_segments.md` for the process and `prod-docs/references/audience_studio.md` for audience-specific rules (naming, JSON→YAML conversion, edge cases). Add a `Pushed Segment URL` column to the Confluence test cases page (NOT to the customer Sheet). Round 1 creates the folder on first push; the same folder stays in place for Round 2.
+
+7. **Update Current Project State** at end of Phase 3: Confluence test cases page URL, customer-facing Google Sheet URL, Round 1 pass rate, failing TC-IDs, **`FDE Test - <Customer>` folder name**.
 
 ### Phase 4: Customer Edits Returned + Round 2
 
@@ -228,7 +230,9 @@ Audience-specific updates:
    
    Wait for explicit approval.
 
-7. Run `tdx agent test` only after approval. Update Round 2 Result column on the Confluence page.
+7. Run `tdx agent test` only after approval. Update Round 2 Result column on **both** the Confluence page and the customer-facing Sheet.
+
+7b. **Refresh test segments in Audience Studio.** Round 2 retest pushes the same TC-ID-prefixed segment names → `tdx sg push` overwrites by name. The `FDE Test - <Customer>` folder always reflects the latest run. Refresh the `Pushed Segment URL` column on the Confluence test cases page (URLs typically unchanged since segments overwrite, but content behind them differs). See `../shared/audience_studio_segments.md` Step 3 for the overwrite-by-name behavior. Each iteration retest in this loop also refreshes test segments.
 
 Failure-to-fix mapping: see `agent-setup/references/eval.md` Round 2 section.
 
@@ -239,6 +243,18 @@ Read `../shared/customer_docs_pattern.md` for the 5-page set + create order + ke
 If resuming in a new session, **first read Current Project State**.
 
 Before authoring the Behavior page, `Read` the local `knowledge_bases/business_context.md` and (if present) `knowledge_bases/sql_templates.md`.
+
+#### Step 5.0: Generate and push demo segments to Audience Studio
+
+Before authoring the Architecture / Behavior pages, create the customer-facing demo segments — they serve as concrete examples linked from those pages.
+
+1. Read `../shared/audience_studio_segments.md` for the process (approval gates, push mechanics).
+2. Read `prod-docs/references/audience_studio.md` for the audience-agent specifics — the demo-generation procedure (derive from `business_context.md` Priority Attributes + Key Terms + the customer's existing segment folder taxonomy from Phase 1 `tdx sg list`), naming, mandatory rules.
+3. Generate 4-6 customer-specific demo proposals → present to FDE engineer for approval (gate 2 of 3 from the shared pattern).
+4. After approval, push each to the `FDE Solutions - Audience Agent Examples` folder. Collect console URLs.
+5. Update Current Project State with the demo folder name + per-segment URLs.
+
+Demo URLs are referenced from the Architecture and Behavior Phase 5 pages.
 
 Audience-specific page content: see `prod-docs/SKILL.md`.
 
@@ -251,5 +267,6 @@ Audience-specific page content: see `prod-docs/SKILL.md`.
 | `agent-setup/references/business_context_template.md` | Minimal 5-section template for `business_context.md` |
 | `agent-setup/references/sql_templates_template.md` | Format for the optional `sql_templates.md` KB |
 | `agent-setup/references/eval.md` | Audience-specific test categories + example prompts + failure-to-fix mapping |
-| `prod-docs/SKILL.md` | Audience-specific content for the Phase 6 documentation page set |
+| `prod-docs/SKILL.md` | Audience-specific content for the Phase 5 documentation page set |
+| `prod-docs/references/audience_studio.md` | Audience-specific spec for test-segment dumps (Phase 3/4) and customer-facing demo segments (Phase 5) — folder names, naming, JSON→YAML conversion, demo generation rules |
 | `../shared/*.md` | Generic patterns reused by every solution under `general-skills/` |

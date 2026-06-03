@@ -8,7 +8,7 @@ The customer's edits in Phase 4 are **distilled** into `business_context.md` (an
 
 ## Page title
 
-`Audience Agent Requirements - <Customer>` (every Confluence page title must be suffixed with the customer name — Confluence enforces unique titles per space)
+`[CUST-FACING] Audience Agent Requirements - <Customer>` (every Confluence page title must be suffixed with the customer name — Confluence enforces unique titles per space; the `[CUST-FACING]` prefix marks pages the customer is meant to read — see `../../../shared/customer_docs_pattern.md`)
 
 ## Inference markers
 
@@ -64,7 +64,7 @@ Use the canonical full example as a reference when rendering the rest: [Audience
 Use this body when calling `createConfluencePage` (everything between the outer ```` ``` ```` lines below — peel the wrapper off when passing to the API):
 
 ````markdown
-# Audience Agent Requirements - <Customer>
+# [CUST-FACING] Audience Agent Requirements - <Customer>
 
 **Purpose:** Help us tailor the Custom Audience Agent to your business. Please fill in each section below. None of the fields are mandatory, but the more you provide, the better the agent will understand your data and respond to your team's questions.
 
