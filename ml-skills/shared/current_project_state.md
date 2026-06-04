@@ -1,30 +1,30 @@
 ---
 name: shared-current-project-state
 description: |
-  Cross-session context store concept for FDE engagements. Defines the "Current Project State - <Customer>" Confluence page format and the rule that every resumed session reads this page first. Used by every solution under general-skills/.
+  Cross-session context store concept for FDE engagements. Defines the "Current Project State - <Solution Name> - <Customer>" Confluence page format and the rule that every resumed session reads this page first. Used by every solution under general-skills/.
 ---
 
 # Shared: Current Project State
 
-FDE engagements span multiple sessions. The **Current Project State - <Customer>** Confluence page is the cross-session context store — a running summary of what's been done and the URLs of every artifact created.
+FDE engagements span multiple sessions. The **Current Project State - <Solution Name> - <Customer>** Confluence page is the cross-session context store — a running summary of what's been done and the URLs of every artifact created.
 
 ## Rules
 
 1. **Create early.** The Current Project State page is the *first* page created under the solution folder, before any customer-shareable docs.
 2. **Update at the end of every phase.** Phase completion, date, key URLs, key decisions, next action.
-3. **Read first on resume.** When starting a new session, the LLM's first action is `searchConfluenceUsingCql` for `Current Project State - <Customer>` (title match). The "Current phase" + "Next Action" fields determine where to pick up.
+3. **Read first on resume.** When starting a new session, the LLM's first action is `searchConfluenceUsingCql` for `Current Project State - <Solution Name> - <Customer>` (title match). The "Current phase" + "Next Action" fields determine where to pick up.
 4. **Authoritative.** When in doubt, the State page wins.
 
 ## Page Creation
 
-Title: `Current Project State - <Customer>` (suffix is mandatory — Confluence enforces unique titles per space)
+Title: `Current Project State - <Solution Name> - <Customer>` (suffix is mandatory — Confluence enforces unique titles per space)
 
 ```
 createConfluencePage:
   cloudId: treasure-data.atlassian.net
   spaceId: 9797636
   parentId: <solution_folder_page_id>
-  title: "Current Project State - <Customer>"   # MUST be suffixed — Confluence enforces unique titles per space
+  title: "Current Project State - <Solution Name> - <Customer>"   # MUST be suffixed — Confluence enforces unique titles per space
   contentFormat: markdown
   body: |
     # Current Project State - <Customer>
@@ -65,7 +65,7 @@ Use `updateConfluencePage` (full-page replace) at the end of each phase. Render 
 updateConfluencePage:
   cloudId: treasure-data.atlassian.net
   pageId: <state_page_id>
-  title: "Current Project State - <Customer>"
+  title: "Current Project State - <Solution Name> - <Customer>"
   contentFormat: markdown
   body: <fully re-rendered markdown>
 ```
@@ -74,31 +74,8 @@ updateConfluencePage:
 
 | Phase complete | Update fields |
 |---|---|
-| Phase 1 data exploration | Current phase → 2, confirmed source tables + key columns in Key Decisions |
-| Phase 2 Confluence setup | Current phase → 3, solution folder ID, requirements doc URL |
-| Phase 3 workflow push | Current phase → 4, workflow project name + push date in Key Decisions. **Add a "Phase 3 Validation Results" section** with one sub-section per output table: table name, row count, and a 1–2 line plain-language summary of what the numbers show (e.g. source coverage, conversion counts, top channels, model scores). Use the solution's `workflow-setup/references/eval.md` queries to gather the numbers. |
-| Phase 4 agent setup | Current phase → 5 (waiting for requirements), Foundry project name + push date, integration check result |
-| Phase 5 workflow update | Current phase → 6, updated params summary, re-run validation results (same format as Phase 3) |
-| Phase 6 docs | Current phase → "complete — engagement live", all 5 doc URLs populated |
-
-
-## Project Stages Summary
-Below are the standard project stages that each ml-solution follows:
-
-### Phase 1: Data Exploration
-Explore customer data
-
-### Phase 2: Create Customer Requirements Doc on Confluence
-Create Initial Confluence Pages 
-
-### Phase 3: Push Minimal Version of Workflow
-Push workflow first-draft version based on initial data exploration and requirements gathering template
-
-### Phase 4: Minimal Agent Setup and Validation
-Setup initial agent version and validate
-
-### Phase 5: Update Workflow with Customer Requirements (Round 2)
-Update existing workflow with new params based on customer feedback and re-run workflow and perform output validation
-
-### Phase 6: Customer-Specific Documentation
-Prepare final PROD_ready documentation for customer enablement and project hand-off
+| Phase 1d (requirements doc published) | Current phase → 2, Requirements doc URL, customer notification date in Key Decisions |
+| Phase 2 push | Current phase → 3, project name + push date in Key Decisions |
+| Phase 3 Round 1 tests | Current phase → 4 (waiting on customer), Test cases page URL, Round 1 pass rate, failing TC-IDs |
+| Phase 4 Round 2 tests | Current phase → 5, Round 2 pass rate, remaining limitations |
+| Phase 5 docs | Current phase → "complete — engagement live", all 5 doc URLs populated |

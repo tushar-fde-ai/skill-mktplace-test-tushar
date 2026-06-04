@@ -72,7 +72,7 @@ Usually no filter is needed, but you might filter out:
 custom_filter: "is_bot = false"
 
 # Specific page types
-custom_filter: "page_type IN ('product', 'category')"
+custom_filter: "page_type IN (''product'', ''category'')"
 
 # Exclude admin users
 custom_filter: "user_role != 'admin'"
@@ -98,7 +98,7 @@ Track purchase behavior for **Recency**, **Frequency**, and **Monetary** metrics
   unixtime_col: time
   join_key: canonical_id
   order_amount: unit_price
-  custom_filter: "NOT REGEXP_LIKE(lower(order_status), 'cancel|return')"
+  custom_filter: "NOT REGEXP_LIKE(lower(order_status), ''cancel|return'')"
   apply_time_filter: 'no'
   query_type:
 ```
@@ -172,18 +172,18 @@ WHERE table_name = 'enriched_orders'
 
 **Approach 1: Exclude bad statuses (recommended)**
 ```yaml
-custom_filter: "NOT REGEXP_LIKE(lower(order_status), 'cancel|return|refund|fail')"
+custom_filter: "NOT REGEXP_LIKE(lower(order_status), ''cancel|return|refund|fail'')"
 ```
 
 **Approach 2: Include only good statuses**
 ```yaml
-custom_filter: "order_status IN ('completed', 'shipped', 'delivered')"
+custom_filter: "order_status IN (''completed'', ''shipped'', ''delivered'')"
 ```
 
 **Approach 3: Additional business rules**
 ```yaml
 # Exclude negative amounts and invalid statuses
-custom_filter: "order_status IN ('completed', 'shipped') AND total_amount > 0"
+custom_filter: "order_status IN (''completed'', ''shipped'') AND total_amount > 0"
 ```
 
 ### Amount Column Selection
@@ -230,7 +230,7 @@ Track email engagement for **Recency** and **Frequency** metrics.
   unixtime_col: time
   join_key: canonical_id
   order_amount: 0.0
-  custom_filter: "event_type IN ('friendforward', 'webform', 'open', 'click', 'conversion', 'unsubscribe', 'reply')"
+  custom_filter: "event_type IN (''friendforward'', ''webform'', ''open'', ''click'', ''conversion'', ''unsubscribe'', ''reply'')"
   apply_time_filter: 'no'
   query_type:
 ```
@@ -271,22 +271,22 @@ ORDER BY count DESC;
 
 **Standard engagement filter**:
 ```yaml
-custom_filter: "event_type IN ('open', 'click', 'conversion', 'reply')"
+custom_filter: "event_type IN (''open'', ''click'', ''conversion'', ''reply'')"
 ```
 
 **Include all engagement (even negative)**:
 ```yaml
-custom_filter: "event_type IN ('friendforward', 'webform', 'open', 'click', 'conversion', 'unsubscribe', 'reply')"
+custom_filter: "event_type IN (''friendforward'', ''webform'', ''open'', ''click'', ''conversion'', ''unsubscribe'', ''reply'')"
 ```
 
 **Only strong positive engagement**:
 ```yaml
-custom_filter: "event_type IN ('click', 'conversion', 'reply')"
+custom_filter: "event_type IN (''click'', ''conversion'', ''reply'')"
 ```
 
 **Exclude only non-engagement**:
 ```yaml
-custom_filter: "event_type NOT IN ('sent', 'delivered', 'bounce', 'spam')"
+custom_filter: "event_type NOT IN (''sent'', ''delivered'', ''bounce'', ''spam'')"
 ```
 
 ### Common Variations
@@ -346,13 +346,13 @@ SELECT * FROM database_name.sales_rep_interactions LIMIT 10;
 
 ```yaml
 # Only successful interactions
-custom_filter: "interaction_type IN ('call', 'meeting', 'demo')"
+custom_filter: "interaction_type IN (''call'', ''meeting'', ''demo'')"
 
 # Exclude automated touches
 custom_filter: "is_automated = false"
 
 # Specific interaction outcomes
-custom_filter: "outcome IN ('interested', 'qualified', 'opportunity')"
+custom_filter: "outcome IN (''interested'', ''qualified'', ''opportunity'')"
 ```
 
 ---
@@ -465,7 +465,7 @@ aggregate_metrics_tables:
     unixtime_col: time
     join_key: canonical_id
     order_amount: unit_price
-    custom_filter: "NOT REGEXP_LIKE(lower(order_status), 'cancel|return')"
+    custom_filter: "NOT REGEXP_LIKE(lower(order_status), ''cancel|return'')"
     apply_time_filter: 'no'
     query_type:
 
@@ -474,7 +474,7 @@ aggregate_metrics_tables:
     unixtime_col: time
     join_key: canonical_id
     order_amount: 0.0
-    custom_filter: "event_type IN ('open', 'click', 'conversion')"
+    custom_filter: "event_type IN (''open'', ''click'', ''conversion'')"
     apply_time_filter: 'no'
     query_type:
 
@@ -520,5 +520,5 @@ WHERE unit_price > 0;
 ```sql
 SELECT COUNT(*) as unfiltered FROM gldn_marketing.enriched_orders;
 SELECT COUNT(*) as filtered FROM gldn_marketing.enriched_orders
-WHERE NOT REGEXP_LIKE(lower(order_status), 'cancel|return');
+WHERE NOT REGEXP_LIKE(lower(order_status), ''cancel|return'');
 ```

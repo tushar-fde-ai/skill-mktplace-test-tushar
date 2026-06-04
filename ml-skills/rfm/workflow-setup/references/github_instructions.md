@@ -4,22 +4,30 @@
 
 The production RFM workflow code is maintained at:
 ```
-https://github.com/treasure-data-ps/ps_ml_analytics_team_solutions_prod
+https://github.com/treasure-data/fde-rfm
 ```
 
-The RFM-specific code lives in the `rfm_prod/` directory within this monorepo.
+Once the user has confirmed both the YAML and the project name:
+1. Clone the repo: `git clone https://github.com/treasure-data/fde-rfm.git`
+2. Place `input_params.yml` in `fde-rfm/td_wf/rfm_agent/config/`
+3. Push the workflow to TD:
+   - **Default name**: `cd rfm_agent && tdx wf push -y`
+   - **Custom name**: `cd rfm_agent && tdx w
+
+
+The RFM-specific code lives in the `rfm_agent/` directory within this monorepo.
 
 ## Clone the Repository
 
 ```bash
-git clone https://github.com/treasure-data-ps/ps_ml_analytics_team_solutions_prod.git
-cd ps_ml_analytics_team_solutions_prod/rfm_prod
+git clone https://github.com/treasure-data/fde-rfm.git
+cd fde-rfm/td_wf/rfm_agent
 ```
 
 ## Directory Structure
 
 ```
-rfm_prod/
+rfm_agent/
 ├── config/
 │   └── input_params.yml              # Customer-specific configuration (YOU GENERATE THIS)
 ├── config.json                        # Dashboard datamodel configuration
@@ -41,10 +49,6 @@ rfm_prod/
 │   │   └── create_activity_union_time_range.sql    # Union with range filter
 │   └── union_src_tables/
 │       └── insert_src_rable.sql       # Per-source insert into union table
-├── python_files/
-│   ├── autobuild_segments.py          # Auto-build customer segments
-│   ├── create_datamodel.py            # Create TI dashboard datamodel
-│   └── scan_parent_segments.py        # Scan parent segments
 ├── dashboard/
 │   └── [PROD]RFMTemplate-TDUI.dash    # TI dashboard template
 ├── rfm_launch.dig                     # ENTRY POINT — main workflow orchestrator
@@ -52,8 +56,6 @@ rfm_prod/
 ├── rfm_custom.dig                     # Run custom quartile scoring
 ├── rfm_automl.dig                     # Run PrecisionML notebook scoring
 ├── rfm_agg_stats.dig                  # Generate dashboard stats tables
-├── rfm_datamodel_create.dig           # Create TI datamodel
-└── rfm_datamodel_build.dig            # Build/refresh TI datamodel
 ```
 
 ## Workflow Execution Flow
@@ -76,12 +78,11 @@ rfm_launch.dig (entry point)
 │   ├── rfm_stats_model_params (per-source metadata)
 │   ├── rfm_stats_global_session_filter (session ranking)
 │   └── rfm_stats_daily_agg (historical scores)
-└── 5. rfm_datamodel_create.dig + rfm_datamodel_build.dig (if create_dashboard: yes)
 ```
 
 ## Configuration
 
-Place the generated `input_params.yml` in `rfm_prod/config/input_params.yml`.
+Place the generated `input_params.yml` in `rfm_agent/config/input_params.yml`.
 
 See `workflow_setup_guide.md` for the full configuration walkthrough and `yaml_structure.md` for the parameter reference.
 
@@ -92,7 +93,7 @@ See `workflow_setup_guide.md` for the full configuration walkthrough and `yaml_s
 Push using the folder name as the project name:
 
 ```bash
-cd rfm_prod
+cd rfm_agent
 tdx wf push -y
 ```
 
@@ -101,7 +102,7 @@ tdx wf push -y
 Push under a custom workflow project name:
 
 ```bash
-cd rfm_prod
+cd rfm_agent
 tdx wf upload <custom_project_name>
 ```
 
@@ -134,6 +135,6 @@ tdx wf attempt <attempt_id> logs +<task_name>
 
 ## Access Requirements
 
-- GitHub access to the `treasure-data-ps` organization
+- GitHub access to the `treasure-data` organization
 - TD CLI (`tdx`) installed and authenticated against the customer's TD instance
 - Write permissions to the target `sink_database` in TD

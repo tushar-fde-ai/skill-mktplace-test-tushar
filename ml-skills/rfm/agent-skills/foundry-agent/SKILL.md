@@ -47,8 +47,8 @@ RFM Analysis Agent (single agent)
 ## Repository
 
 ```bash
-git clone https://github.com/treasure-data-ps/ps_ml_analytics_team_solutions_prod.git
-cd ps_ml_analytics_team_solutions_prod/rfm_prod/foundry_agent
+git clone https://github.com/treasure-data/fde-rfm.git
+cd fde-rfm/foundry_agent
 ```
 
 ## Integration Check

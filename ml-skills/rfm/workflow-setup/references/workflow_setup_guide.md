@@ -137,12 +137,14 @@ Each table entry in `aggregate_metrics_tables` defines how that source contribut
   unixtime_col: time
   join_key: canonical_id
   order_amount: 0.0
+  context_col: td_title
   custom_filter:
   apply_time_filter: 'no'
   query_type:
 ```
 
 - `order_amount: 0.0` — pageviews have no monetary value
+- `context_col: td_title` — column used to build per-customer event histogram (top 10 values). Use a meaningful categorical column that exists in the table (e.g. page title, event type). **REQUIRED — leaving blank produces broken SQL.**
 - `custom_filter:` — usually no filter needed, but can filter bots
 - Contributes to: **Recency**, **Frequency**
 
@@ -154,12 +156,14 @@ Each table entry in `aggregate_metrics_tables` defines how that source contribut
   unixtime_col: time
   join_key: canonical_id
   order_amount: unit_price
-  custom_filter: "NOT REGEXP_LIKE(lower(order_status), 'cancel|return')"
+  context_col: order_status
+  custom_filter: "NOT REGEXP_LIKE(lower(order_status), ''cancel|return'')"
   apply_time_filter: 'no'
   query_type:
 ```
 
 - `order_amount: unit_price` — the revenue column (or `total_amount`, `revenue`)
+- `context_col: order_status` — column for event histogram. **REQUIRED.**
 - **CRITICAL**: `custom_filter` must exclude cancelled/returned orders
 - Contributes to: **Recency**, **Frequency**, **Monetary**
 
@@ -171,12 +175,14 @@ Each table entry in `aggregate_metrics_tables` defines how that source contribut
   unixtime_col: time
   join_key: canonical_id
   order_amount: 0.0
-  custom_filter: "event_type IN ('friendforward', 'webform', 'open', 'click', 'conversion', 'unsubscribe', 'reply')"
+  context_col: event_type
+  custom_filter: "event_type IN (''friendforward'', ''webform'', ''open'', ''click'', ''conversion'', ''unsubscribe'', ''reply'')"
   apply_time_filter: 'no'
   query_type:
 ```
 
 - `order_amount: 0.0` — email events have no monetary value
+- `context_col: event_type` — column for event histogram. **REQUIRED.**
 - **CRITICAL**: Exclude 'sent' events — only engagement events count
 - Contributes to: **Recency**, **Frequency**
 
@@ -188,12 +194,14 @@ Each table entry in `aggregate_metrics_tables` defines how that source contribut
   unixtime_col: time
   join_key: canonical_id
   order_amount: 0.0
+  context_col: interaction_type
   custom_filter:
   apply_time_filter: 'no'
   query_type:
 ```
 
 - `order_amount: 0.0` — sales interactions have no monetary value
+- `context_col: interaction_type` — column for event histogram. **REQUIRED.** Use the best categorical column available (e.g. `interaction_type`, `outcome`, `topic`).
 - Contributes to: **Recency**, **Frequency**
 
 ### Step 6: Column Discovery
@@ -202,7 +210,8 @@ For each table, identify:
 1. **Time column**: `time`, `timestamp`, `event_time`, `created_at`
 2. **User ID column**: `canonical_id`, `cdp_profile_id`, `user_id`
 3. **Order amount column** (order tables): `unit_price`, `total_amount`, `revenue`
-4. **Filter columns**: `order_status`, `event_type`
+4. **Context column**: the best categorical column for event histogram — `event_type`, `order_status`, `interaction_type`, `category`, `outcome`, `sentiment`. **Every table must have one.** Omitting it causes broken SQL at runtime.
+5. **Filter columns**: `order_status`, `event_type`
 
 ```sql
 DESCRIBE database_name.table_name;
@@ -224,9 +233,10 @@ Before finalizing, verify:
 1. All table names exist in the database
 2. Column names are correct for each table
 3. `join_key` is consistent across all tables (same `canonical_id` column)
-4. Filters exclude invalid data (cancelled orders, email sends)
-5. `order_amount` column exists and has numeric values
-6. `sink_database` exists and user has write permissions
+4. Every table has a `context_col` pointing to a real column that exists in that table
+5. Filters exclude invalid data (cancelled orders, email sends)
+6. `order_amount` column exists and has numeric values
+7. `sink_database` exists and user has write permissions
 
 ### Step 8: Present to User for Approval
 
@@ -249,10 +259,24 @@ Once the user has confirmed both the YAML and the project name:
 1. Clone the repo: `git clone https://github.com/treasure-data/fde-rfm.git`
 2. Place `input_params.yml` in `fde-rfm/td_wf/rfm_agent/config/`
 3. Push the workflow to TD:
-   - **Default name**: `cd rfm_prod && tdx wf push -y`
-   - **Custom name**: `cd rfm_prod && tdx wf upload <custom_project_name>`
+   - **Default name**: `cd rfm_agent && tdx wf push -y`
+   - **Custom name**: `cd rfm_agent && tdx wf upload <custom_project_name>`
 4. Run the workflow: `tdx wf run`
 5. Monitor via `tdx wf sessions` and `tdx wf timeline`
+
+### String Literal Escaping in custom_filter
+
+The workflow YAML is parsed by digdag, which requires **single quotes inside double-quoted strings to be escaped as `''` (two single quotes)**. This applies to every string literal inside a `custom_filter` value.
+
+```yaml
+# WRONG — single quotes will cause a parse error
+custom_filter: "event_type IN ('open', 'click')"
+
+# CORRECT — escape single quotes as ''
+custom_filter: "event_type IN (''open'', ''click'')"
+```
+
+This applies to all string literals: IN lists, REGEXP_LIKE patterns, inequality comparisons, and CONCAT values.
 
 ## Critical Configuration Rules
 
@@ -274,7 +298,7 @@ Every table must have an `order_amount`. Only order/purchase tables should have 
 # BAD — includes cancelled orders in Monetary score
 custom_filter: ""
 # GOOD
-custom_filter: "NOT REGEXP_LIKE(lower(order_status), 'cancel|return')"
+custom_filter: "NOT REGEXP_LIKE(lower(order_status), ''cancel|return'')"
 ```
 
 **2. Not excluding email 'sent' events**
@@ -282,7 +306,7 @@ custom_filter: "NOT REGEXP_LIKE(lower(order_status), 'cancel|return')"
 # BAD — sends inflate Frequency scores
 custom_filter: ""
 # GOOD
-custom_filter: "event_type IN ('open', 'click', 'conversion')"
+custom_filter: "event_type IN (''open'', ''click'', ''conversion'')"
 ```
 
 **3. Inconsistent join keys across tables**
@@ -301,6 +325,17 @@ custom_filter: "event_type IN ('open', 'click', 'conversion')"
 order_amount: unit_price
 # GOOD
 order_amount: 0.0
+```
+
+**5. Missing context_col**
+```yaml
+# BAD — context_col omitted: workflow renders broken SQL with empty column reference
+order_amount: 0.0
+custom_filter:
+# GOOD
+order_amount: 0.0
+context_col: event_type   # use the best categorical column in the table
+custom_filter:
 ```
 
 ## GitHub Repository

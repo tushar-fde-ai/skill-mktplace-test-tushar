@@ -1,6 +1,9 @@
 # Customer-specific configs and rendered dashboards — local artifacts, not part of the skill template
 **/.customer-configs/
 
+# Plugin cache — populated at runtime, not part of the skill template
+.cache/
+
 # OS metadata
 .DS_Store
 **/.DS_Store

@@ -80,11 +80,11 @@ Key questions the requirements doc must answer: unique user ID column (`canonica
 
 ### Phase 3: Push Minimal Workflow
 
-**GitHub repo:** `https://github.com/treasure-data-ps/ps_ml_analytics_team_solutions_prod`
-**Workflow project name:** `rfm_prod`
-**Workflow path:** `ps_ml_analytics_team_solutions_prod/rfm_prod/`
+**GitHub repo:** `https://github.com/treasure-data/fde-rfm`
+**Workflow project name:** `rfm_agent`
+**Workflow path:** `fde-rfm/td_wf/`
 **Entry point:** `rfm_launch.dig`
-**Config file:** `rfm_prod/config/input_params.yml`
+**Config file:** `rfm_agent/config/input_params.yml`
 
 For the minimal push, populate `input_params.yml` with what you know from Phase 1 (tables, user ID column, timestamp column, order amount column). Use Phase 2 answers if already available; otherwise use safe defaults.
 
@@ -140,11 +140,11 @@ RFM-specific content for each page is in `prod-docs/references/`:
 
 ## Quick Reference
 
-- **GitHub repo**: `https://github.com/treasure-data-ps/ps_ml_analytics_team_solutions_prod`
-- **Workflow project name**: `rfm_prod`
-- **Workflow path**: `ps_ml_analytics_team_solutions_prod/rfm_prod/`
-- **Entry point**: `rfm_launch.dig`
-- **Config file**: `rfm_prod/config/input_params.yml`
+- **GitHub repo:** `https://github.com/treasure-data/fde-rfm`
+- - **Workflow project name:** `rfm_agent`
+**Workflow path:** `fde-rfm/td_wf/`
+- **Entry point:** `rfm_launch.dig`
+- **Config file:** `rfm_agent/config/input_params.yml`
 - **Key outputs**: `rfm_output_table` (per-profile R/F/M quartiles + segment), `rfm_stats` (per-segment distribution stats), `rfm_combined_user_events` (union activity), `rfm_stats_histogram`, `rfm_stats_model_params` (dashboard tables) in the sink database
 - **Scoring**: Quartile-based (1-4 scale) using 25th/50th/75th percentile boundaries
 - **Confluence folder name**: `RFM Customer Segmentation`

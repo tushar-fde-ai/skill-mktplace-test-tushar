@@ -67,6 +67,7 @@ aggregate_metrics_tables:
     unixtime_col: time
     join_key: canonical_id
     order_amount: 0.0
+    context_col: td_title
     custom_filter:
     apply_time_filter: 'no'
     query_type:
@@ -76,7 +77,8 @@ aggregate_metrics_tables:
     unixtime_col: time
     join_key: canonical_id
     order_amount: unit_price
-    custom_filter: "NOT REGEXP_LIKE(lower(order_status), 'cancel|return')"
+    context_col: order_status
+    custom_filter: "NOT REGEXP_LIKE(lower(order_status), ''cancel|return'')"
     apply_time_filter: 'no'
     query_type:
 
@@ -85,7 +87,8 @@ aggregate_metrics_tables:
     unixtime_col: time
     join_key: canonical_id
     order_amount: 0.0
-    custom_filter: "event_type IN ('friendforward', 'webform', 'open', 'click', 'conversion', 'unsubscribe', 'reply')"
+    context_col: event_type
+    custom_filter: "event_type IN (''friendforward'', ''webform'', ''open'', ''click'', ''conversion'', ''unsubscribe'', ''reply'')"
     apply_time_filter: 'no'
     query_type:
 
@@ -94,6 +97,7 @@ aggregate_metrics_tables:
     unixtime_col: time
     join_key: canonical_id
     order_amount: 0.0
+    context_col: interaction_type
     custom_filter:
     apply_time_filter: 'no'
     query_type:
@@ -138,6 +142,7 @@ Each table entry requires:
 | `unixtime_col` | string | Timestamp column name | `time`, `event_time`, `timestamp` |
 | `join_key` | string | User ID column name | `canonical_id`, `user_id` |
 | `order_amount` | float/string | Revenue column or 0.0 | `unit_price`, `total_amount`, `0.0` |
+| `context_col` | string | **REQUIRED.** Column for per-customer event histogram (top 10 values). Must be a real categorical column in src_table. Omitting this causes broken SQL at runtime. | `event_type`, `order_status`, `category`, `outcome`, `sentiment` |
 | `custom_filter` | string | SQL WHERE clause | See examples below |
 | `apply_time_filter` | string | Apply time filter to this table | `yes`, `no` |
 | `query_type` | string | Leave blank for YML, 'custom' for SQL file | `` (blank), `custom` |
@@ -147,25 +152,25 @@ Each table entry requires:
 ### Orders Table
 ```yaml
 # Exclude cancelled and returned orders
-custom_filter: "NOT REGEXP_LIKE(lower(order_status), 'cancel|return')"
+custom_filter: "NOT REGEXP_LIKE(lower(order_status), ''cancel|return'')"
 
 # More specific status filtering
-custom_filter: "order_status IN ('completed', 'shipped', 'delivered')"
+custom_filter: "order_status IN (''completed'', ''shipped'', ''delivered'')"
 
 # Exclude refunds and minimum order value
-custom_filter: "order_status = 'completed' AND total_amount > 0"
+custom_filter: "order_status = ''completed'' AND total_amount > 0"
 ```
 
 ### Email Events Table
 ```yaml
 # Include only engagement events
-custom_filter: "event_type IN ('friendforward', 'webform', 'open', 'click', 'conversion', 'unsubscribe', 'reply')"
+custom_filter: "event_type IN (''friendforward'', ''webform'', ''open'', ''click'', ''conversion'', ''unsubscribe'', ''reply'')"
 
 # More selective engagement
-custom_filter: "event_type IN ('open', 'click', 'conversion')"
+custom_filter: "event_type IN (''open'', ''click'', ''conversion'')"
 
 # Exclude bounces and spam
-custom_filter: "event_type NOT IN ('bounce', 'spam', 'sent')"
+custom_filter: "event_type NOT IN (''bounce'', ''spam'', ''sent'')"
 ```
 
 ### Pageviews Table
@@ -177,7 +182,7 @@ custom_filter:
 custom_filter: "is_bot = false"
 
 # Specific page types only
-custom_filter: "page_type IN ('product', 'category', 'checkout')"
+custom_filter: "page_type IN (''product'', ''category'', ''checkout'')"
 ```
 
 ## Output Table Names
@@ -265,17 +270,17 @@ custom_filter: ""  # No filter on orders
 ✅ **Filter invalid orders**
 ```yaml
 # DO THIS
-custom_filter: "NOT REGEXP_LIKE(lower(order_status), 'cancel|return')"
+custom_filter: "NOT REGEXP_LIKE(lower(order_status), ''cancel|return'')"
 ```
 
 ❌ **Including email "sent" events**
 ```yaml
 # DON'T DO THIS - sent is not engagement
-custom_filter: "event_type IN ('sent', 'open', 'click')"
+custom_filter: "event_type IN (''sent'', ''open'', ''click'')"
 ```
 
 ✅ **Only engagement events**
 ```yaml
 # DO THIS
-custom_filter: "event_type IN ('open', 'click', 'conversion')"
+custom_filter: "event_type IN (''open'', ''click'', ''conversion'')"
 ```

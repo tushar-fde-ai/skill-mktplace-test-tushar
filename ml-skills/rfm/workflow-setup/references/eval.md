@@ -10,7 +10,7 @@ Run these checks after every workflow execution (Phase 3 minimal push and Phase 
 
 ```sql
 -- Row count and distinct profile count
-SELECT COUNT(*) AS total_rows, COUNT(DISTINCT canonical_id) AS distinct_profiles
+SELECT COUNT(*) AS total_rows, COUNT(DISTINCT customer_id) AS distinct_profiles
 FROM ${sink_database}.rfm_output_table;
 ```
 
@@ -22,9 +22,9 @@ FROM ${sink_database}.rfm_output_table;
 -- Confirm expected score columns exist and are non-null
 SELECT
   COUNT(*) AS total,
-  COUNT(CASE WHEN recency_score IS NOT NULL THEN 1 END) AS has_recency,
-  COUNT(CASE WHEN frequency_score IS NOT NULL THEN 1 END) AS has_frequency,
-  COUNT(CASE WHEN monetary_score IS NOT NULL THEN 1 END) AS has_monetary,
+  COUNT(CASE WHEN r_quartile IS NOT NULL THEN 1 END) AS has_recency,
+  COUNT(CASE WHEN f_quartile IS NOT NULL THEN 1 END) AS has_frequency,
+  COUNT(CASE WHEN m_quartile IS NOT NULL THEN 1 END) AS has_monetary,
   COUNT(CASE WHEN rfm_segment IS NOT NULL THEN 1 END) AS has_segment
 FROM ${sink_database}.rfm_output_table;
 ```
@@ -33,7 +33,7 @@ FROM ${sink_database}.rfm_output_table;
 
 ```sql
 -- Score distribution sanity check (quartile → expect 4 distinct values per score)
-SELECT recency_score, COUNT(*) AS cnt
+SELECT r_quartile, COUNT(*) AS cnt
 FROM ${sink_database}.rfm_output_table
 GROUP BY 1 ORDER BY 1;
 ```
@@ -47,15 +47,16 @@ GROUP BY 1 ORDER BY 1;
 **What it is:** Per-segment distribution statistics. Consumed by the RFM Analysis Agent and TI dashboard.
 
 ```sql
-SELECT rfm_segment, COUNT(*) AS profile_count
+SELECT rfm_segment, segment_size
 FROM ${sink_database}.rfm_stats
-GROUP BY 1 ORDER BY 2 DESC;
+ORDER BY segment_size DESC;
 ```
 
 **Pass criteria:**
 - Rows exist for multiple segments
-- Segment labels are recognizable (e.g., Champions, Loyal Customers, At-Risk, Lost) if `auto_build_segments: yes`
-- Total profile count across segments matches `distinct_profiles` in `rfm_output_table`
+- Segment labels are recognizable (e.g., Champions, Loyal Customers, At-Risk, Lost)
+- The `ALL` row `segment_size` matches `distinct_profiles` in `rfm_output_table`
+- All other segments have `segment_size > 0`
 
 ---
 
@@ -65,7 +66,7 @@ GROUP BY 1 ORDER BY 2 DESC;
 
 ```sql
 -- Confirm all expected sources are present
-SELECT name AS source_name, COUNT(*) AS profile_count,
+SELECT source AS source_name, COUNT(*) AS profile_count,
        MIN(recency_days) AS min_recency, MAX(total_touchpoints) AS max_freq
 FROM ${sink_database}.rfm_combined_user_events
 GROUP BY 1 ORDER BY 2 DESC;
