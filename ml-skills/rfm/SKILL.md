@@ -120,6 +120,10 @@ Re-run the workflow and re-validate output tables (same checks as Phase 3).
 
 ### Phase 6: Customer Documentation
 
+**Step 0 — Model Summary Dashboard.**
+Before writing any Confluence pages, check whether a dashboard template exists and generate the HTML dashboard for the customer.
+See [Model Summary Dashboard](#model-summary-dashboard) section below for the full procedure.
+
 **Step 1 — Parent Segment attributes + example audiences.**
 Read `../shared/parent_segment_update.md` for the process.
 Read `prod-docs/references/parent_segment.md` for the RFM-specific attribute columns and example segment definitions. Do not read this file until the user has approved the plan.
@@ -135,6 +139,108 @@ RFM-specific content for each page is in `prod-docs/references/`:
 | Runbook | `prod-docs/references/runbook.md` |
 | Customer-facing overview | `prod-docs/references/customer_docs.md` |
 | Technical handoff | `prod-docs/references/technical_handoff.md` |
+
+---
+
+## Model Summary Dashboard
+
+This procedure applies whenever the user asks for a model summary dashboard, a run summary, or an HTML report — AND as **Phase 6 Step 0** before writing Confluence documentation.
+
+### Step 1 — Check for a dashboard template
+
+Check whether the template file exists at:
+
+```
+agent-skills/rfm-analysis/references/dashboard_template.html
+```
+
+Use the Read tool to attempt to read the file. Two outcomes:
+
+---
+
+#### Path A — Template exists
+
+Follow the token-substitution pattern used by the MTA and NBA-scores skills:
+
+1. **Read** `agent-skills/rfm-analysis/references/dashboard_template.html` in full.
+2. **Strip** the leading HTML comment block (everything between `<!--` and `-->` at the top of the file — this is the instruction block and must not appear in output).
+3. **Run the source queries** documented in the template comment against the customer's `sink_database`. All queries use `tdx query -d <sink_database> "SQL"`.
+4. **Replace every `{{TOKEN}}`** in the template with real values from the query results:
+   - Numeric tokens: apply thousands separators; percentages to 1 decimal place + `%`
+   - `_json` tokens: emit valid JS array/object literals — double-quoted strings, no trailing commas
+   - `_rows` tokens: pre-rendered `<tr>...</tr>` HTML, injected directly into `<tbody>`
+5. **Determine output path:**
+   - If `.customer-configs/<customer_slug>/` exists, write to `.customer-configs/<customer_slug>/rfm_model_summary_dashboard.html`
+   - Otherwise write to the current working directory as `rfm_model_summary_dashboard.html`
+6. **Write** the substituted HTML to the output path.
+7. **Open** the file with `mcp__tas__open_file`.
+
+---
+
+#### Path B — Template does not exist
+
+Generate a self-contained HTML dashboard from scratch following the TD design system used by MTA and NBA-scores dashboards:
+
+**Design rules (mandatory — do not deviate):**
+- **Theme:** Light background `#F7F8FB`, white cards, ink `#1F2147`, muted `#6A6F8A`
+- **Header:** Blue gradient `linear-gradient(135deg, #2E41A6 0%, #5867B8 100%)` with white text, tab navigation attached to the bottom of the header
+- **TD color palette** (use in order for chart series):
+  `["#B4E3E3","#ABB3DB","#D9BFDF","#F8E1B0","#8FD6D4","#828DCA","#C69ED0","#F5D389","#6AC8C6","#5867B8","#B37EC0","#F1C461","#44BAB8","#2E41A6","#8CC97E","#A05EB0"]`
+- **Segment colors** (fixed, use consistently across all charts):
+  - Champions: `#44BAB8` · Loyal Customers: `#5867B8` · Potential Loyalists: `#8FD6D4`
+  - Promising: `#B4E3E3` · New Customers: `#8CC97E` · Cannot Lose Them: `#F1C461`
+  - Need Attention: `#F5D389` · Hibernating: `#D9BFDF` · High Value Sleeping: `#C69ED0`
+  - Lost Customers: `#ABB3DB`
+- **Charts:** Chart.js 4.4.1 CDN only — no build step, no React, no Plotly
+- **Font:** system font stack (`-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`)
+- **Tables:** `<thead>` background `#B4E3E3`, striped rows `#F7F8FB`
+
+**Required tabs and content:**
+
+| Tab | Sections |
+|---|---|
+| **Segment Overview** | 5 KPI cards (total profiles, avg R, avg F, avg M, champion rate) · segment donut chart · horizontal bar breakdown by segment |
+| **Score Distributions** | Bar chart for R quartile distribution · bar chart for F quartile distribution · bar chart for M quartile distribution · quartile threshold reference table |
+| **Segment Detail** | Full per-segment stats table (count, %, avg R/F/M, avg spend, touchpoints) · R×F heatmap colored by avg M |
+| **Model Config** | Run parameters table (lookback, num_bins, user_id_col, monetary_col, sink_db) · source tables used · scoring method |
+
+**Source queries to run** (against `sink_database`):
+
+```sql
+-- KPIs + segment stats
+SELECT rfm_segment,
+       COUNT(*) AS profile_count,
+       ROUND(AVG(r_quartile), 2) AS avg_r,
+       ROUND(AVG(f_quartile), 2) AS avg_f,
+       ROUND(AVG(m_quartile), 2) AS avg_m,
+       ROUND(AVG(total_spend), 2) AS avg_spend,
+       ROUND(AVG(total_touchpoints), 1) AS avg_tp
+FROM rfm_output_table
+GROUP BY rfm_segment
+ORDER BY profile_count DESC
+
+-- Score distributions (R/F/M quartile histogram)
+SELECT r_quartile, f_quartile, m_quartile, COUNT(*) AS cnt
+FROM rfm_output_table
+GROUP BY 1, 2, 3
+
+-- Model parameters
+SELECT * FROM rfm_stats_model_params LIMIT 1
+
+-- R×F matrix avg M
+SELECT r_quartile, f_quartile, ROUND(AVG(m_quartile), 2) AS avg_m
+FROM rfm_output_table
+GROUP BY 1, 2
+ORDER BY 1 DESC, 2
+```
+
+**Output path and delivery:** same as Path A — write to `.customer-configs/<customer_slug>/rfm_model_summary_dashboard.html` if that directory exists, otherwise to the current directory. Open with `mcp__tas__open_file`.
+
+---
+
+### Step 2 — Note the dashboard path
+
+After generating the dashboard, record its file path. Reference it in the Technical Handoff Confluence page as the "Model Summary Dashboard" deliverable.
 
 ---
 
