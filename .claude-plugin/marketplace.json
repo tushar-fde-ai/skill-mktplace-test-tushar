@@ -46,6 +46,15 @@
         "./general-skills/custom-analytics-agent/agent-setup",
         "./general-skills/custom-analytics-agent/prod-docs"
       ]
+    },
+    {
+      "name": "fde-test-skills",
+      "description": "respond with text from main skill when user asks.",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./"
+      ]
     }
   ]
 }
